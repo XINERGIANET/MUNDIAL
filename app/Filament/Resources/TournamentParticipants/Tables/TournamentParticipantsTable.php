@@ -14,6 +14,26 @@ use Filament\Tables\Table;
 
 class TournamentParticipantsTable
 {
+    private static function statusLabel(?string $state): string
+    {
+        return [
+            'pending_payment' => 'Pendiente de pago',
+            'approved' => 'Aprobado',
+            'rejected' => 'Rechazado',
+            'suspended' => 'Suspendido',
+        ][$state] ?? (string) $state;
+    }
+
+    private static function paymentLabel(?string $state): string
+    {
+        return [
+            'unpaid' => 'No pagado',
+            'pending_review' => 'En revision',
+            'paid' => 'Pagado',
+            'waived' => 'Exonerado',
+        ][$state] ?? (string) $state;
+    }
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -21,8 +41,8 @@ class TournamentParticipantsTable
                 TextColumn::make('tournament.name')->label('Torneo')->searchable(),
                 TextColumn::make('user.name')->label('Usuario')->searchable(),
                 TextColumn::make('user.phone')->label('Celular')->searchable(),
-                TextColumn::make('status')->label('Estado')->badge(),
-                TextColumn::make('payment_status')->label('Pago')->badge(),
+                TextColumn::make('status')->label('Estado')->badge()->formatStateUsing(fn (?string $state): string => self::statusLabel($state)),
+                TextColumn::make('payment_status')->label('Pago')->badge()->formatStateUsing(fn (?string $state): string => self::paymentLabel($state)),
                 TextColumn::make('approved_at')->label('Aprobado')->dateTime(),
             ])
             ->filters([

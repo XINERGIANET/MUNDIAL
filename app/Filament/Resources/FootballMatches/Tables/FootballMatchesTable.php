@@ -10,12 +10,23 @@ use Filament\Actions\Action;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\TextInput;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class FootballMatchesTable
 {
+    private static function statusLabel(?string $state): string
+    {
+        return [
+            'scheduled' => 'Programado',
+            'live' => 'En vivo',
+            'finished' => 'Finalizado',
+            'cancelled' => 'Cancelado',
+        ][$state] ?? (string) $state;
+    }
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -25,7 +36,16 @@ class FootballMatchesTable
                 TextColumn::make('awayTeam.name')->label('Visitante')->searchable(),
                 TextColumn::make('starts_at')->label('Inicio')->dateTime()->sortable(),
                 TextColumn::make('prediction_closes_at')->label('Cierre pronosticos')->dateTime()->sortable(),
-                TextColumn::make('status')->label('Estado')->badge(),
+                TextColumn::make('status')
+                    ->label('Estado')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => self::statusLabel($state))
+                    ->color(fn (?string $state): string => match ($state) {
+                        'finished' => 'success',
+                        'live' => 'warning',
+                        'cancelled' => 'danger',
+                        default => 'info',
+                    }),
                 TextColumn::make('score')->label('Marcador')->state(fn ($record) => $record->home_score === null ? '-' : $record->home_score.' - '.$record->away_score),
             ])
             ->filters([
@@ -34,9 +54,25 @@ class FootballMatchesTable
             ->recordActions([
                 Action::make('result')
                     ->label('Registrar resultado')
+                    ->modalHeading('Registrar resultado oficial')
+                    ->modalWidth(MaxWidth::Large)
+                    ->modalSubmitActionLabel('Guardar resultado')
+                    ->modalContent(fn ($record) => view('filament.actions.match-result-modal', ['record' => $record]))
                     ->schema([
-                        TextInput::make('home_score')->numeric()->required()->minValue(0)->maxValue(30),
-                        TextInput::make('away_score')->numeric()->required()->minValue(0)->maxValue(30),
+                        TextInput::make('home_score')
+                            ->label('Goles local')
+                            ->numeric()
+                            ->required()
+                            ->minValue(0)
+                            ->maxValue(30)
+                            ->extraInputAttributes(['class' => 'text-center text-2xl font-black']),
+                        TextInput::make('away_score')
+                            ->label('Goles visitante')
+                            ->numeric()
+                            ->required()
+                            ->minValue(0)
+                            ->maxValue(30)
+                            ->extraInputAttributes(['class' => 'text-center text-2xl font-black']),
                     ])
                     ->action(function ($record, array $data): void {
                         app(MatchResultService::class)->register($record, (int) $data['home_score'], (int) $data['away_score'], auth()->user());

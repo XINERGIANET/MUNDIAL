@@ -14,12 +14,23 @@ use Filament\Tables\Table;
 
 class TournamentsTable
 {
+    private static function statusLabel(?string $state): string
+    {
+        return [
+            'draft' => 'Borrador',
+            'open' => 'Abierto',
+            'running' => 'En curso',
+            'finished' => 'Finalizado',
+            'cancelled' => 'Cancelado',
+        ][$state] ?? (string) $state;
+    }
+
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
                 TextColumn::make('name')->label('Torneo')->searchable()->sortable(),
-                TextColumn::make('status')->label('Estado')->badge()->sortable(),
+                TextColumn::make('status')->label('Estado')->badge()->sortable()->formatStateUsing(fn (?string $state): string => self::statusLabel($state)),
                 TextColumn::make('starts_at')->label('Inicio')->dateTime()->sortable(),
                 TextColumn::make('entry_fee')->label('Inscripcion')->money('PEN')->sortable(),
                 IconColumn::make('is_active')->label('Activo')->boolean(),

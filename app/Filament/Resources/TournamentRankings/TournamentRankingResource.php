@@ -22,7 +22,7 @@ class TournamentRankingResource extends Resource
 
     protected static ?string $modelLabel = 'ranking';
 
-    protected static ?string $pluralModelLabel = 'rankings';
+    protected static ?string $pluralModelLabel = 'ranking general';
 
     protected static ?string $navigationLabel = 'Ranking';
 

@@ -14,14 +14,14 @@ class TournamentRankingsTable
     {
         return $table
             ->columns([
-                TextColumn::make('position')->sortable(),
-                TextColumn::make('tournament.name')->searchable(),
-                TextColumn::make('user.name')->searchable(),
-                TextColumn::make('user.phone')->searchable(),
-                TextColumn::make('total_points')->sortable(),
-                TextColumn::make('exact_scores_count'),
-                TextColumn::make('correct_results_count'),
-                TextColumn::make('wrong_predictions_count'),
+                TextColumn::make('position')->label('Posicion')->sortable(),
+                TextColumn::make('tournament.name')->label('Torneo')->searchable(),
+                TextColumn::make('user.name')->label('Usuario')->searchable(),
+                TextColumn::make('user.phone')->label('Celular')->searchable(),
+                TextColumn::make('total_points')->label('Puntos')->sortable(),
+                TextColumn::make('exact_scores_count')->label('Scores exactos'),
+                TextColumn::make('correct_results_count')->label('Resultados correctos'),
+                TextColumn::make('wrong_predictions_count')->label('Fallos'),
             ])
             ->filters([])
             ->recordActions([EditAction::make()])
