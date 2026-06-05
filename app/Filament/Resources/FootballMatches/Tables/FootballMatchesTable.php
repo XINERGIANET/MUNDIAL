@@ -10,7 +10,6 @@ use Filament\Actions\Action;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\TextInput;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -55,7 +54,7 @@ class FootballMatchesTable
                 Action::make('result')
                     ->label('Registrar resultado')
                     ->modalHeading('Registrar resultado oficial')
-                    ->modalWidth(MaxWidth::Large)
+                    ->modalWidth('lg')
                     ->modalSubmitActionLabel('Guardar resultado')
                     ->modalContent(fn ($record) => view('filament.actions.match-result-modal', ['record' => $record]))
                     ->schema([
