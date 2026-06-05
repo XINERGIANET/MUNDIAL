@@ -19,11 +19,11 @@ class TeamsTable
     {
         return $table
             ->columns([
-                ImageColumn::make('logo_path')->disk('public')->label('Logo'),
-                TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('fifa_code')->searchable(),
-                TextColumn::make('country')->searchable(),
-                IconColumn::make('is_active')->boolean(),
+                ImageColumn::make('logo_path')->label('Bandera')->height(28)->width(42),
+                TextColumn::make('name')->label('Equipo')->searchable()->sortable(),
+                TextColumn::make('fifa_code')->label('Codigo')->searchable(),
+                TextColumn::make('country')->label('Pais')->searchable(),
+                IconColumn::make('is_active')->label('Activo')->boolean(),
             ])
             ->filters([
                 TrashedFilter::make(),

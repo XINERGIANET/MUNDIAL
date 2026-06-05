@@ -20,6 +20,14 @@ class AuditLogResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $modelLabel = 'auditoria';
+
+    protected static ?string $pluralModelLabel = 'auditoria';
+
+    protected static ?string $navigationLabel = 'Auditoria';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Administracion';
+
     public static function form(Schema $schema): Schema
     {
         return AuditLogForm::configure($schema);

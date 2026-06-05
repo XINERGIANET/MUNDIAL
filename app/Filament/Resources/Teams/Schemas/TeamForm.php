@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Teams\Schemas;
 
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -14,13 +13,13 @@ class TeamForm
     {
         return $schema
             ->components([
-                TextInput::make('name')->required()->unique(ignoreRecord: true)->maxLength(255),
-                TextInput::make('slug')->required()->unique(ignoreRecord: true)->maxLength(255),
-                FileUpload::make('logo_path')->image()->directory('teams')->disk('public'),
-                TextInput::make('fifa_code')->maxLength(8),
-                TextInput::make('country')->maxLength(255),
-                Textarea::make('description')->columnSpanFull(),
-                Toggle::make('is_active')->default(true),
+                TextInput::make('name')->label('Nombre')->required()->unique(ignoreRecord: true)->maxLength(255),
+                TextInput::make('slug')->label('Slug')->required()->unique(ignoreRecord: true)->maxLength(255),
+                TextInput::make('logo_path')->label('URL bandera/logo')->url()->maxLength(255),
+                TextInput::make('fifa_code')->label('Codigo FIFA')->maxLength(8),
+                TextInput::make('country')->label('Pais')->maxLength(255),
+                Textarea::make('description')->label('Descripcion')->columnSpanFull(),
+                Toggle::make('is_active')->label('Activo')->default(true),
             ]);
     }
 }

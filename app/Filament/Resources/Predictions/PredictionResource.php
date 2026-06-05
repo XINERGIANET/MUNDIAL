@@ -20,6 +20,14 @@ class PredictionResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $modelLabel = 'pronostico';
+
+    protected static ?string $pluralModelLabel = 'pronosticos';
+
+    protected static ?string $navigationLabel = 'Pronosticos';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Operaciones';
+
     public static function form(Schema $schema): Schema
     {
         return PredictionForm::configure($schema);

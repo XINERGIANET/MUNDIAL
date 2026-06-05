@@ -20,13 +20,13 @@ class FootballMatchesTable
     {
         return $table
             ->columns([
-                TextColumn::make('tournament.name')->searchable(),
+                TextColumn::make('tournament.name')->label('Torneo')->searchable(),
                 TextColumn::make('homeTeam.name')->label('Local')->searchable(),
                 TextColumn::make('awayTeam.name')->label('Visitante')->searchable(),
-                TextColumn::make('starts_at')->dateTime()->sortable(),
-                TextColumn::make('prediction_closes_at')->dateTime()->sortable(),
-                TextColumn::make('status')->badge(),
-                TextColumn::make('score')->state(fn ($record) => $record->home_score === null ? '-' : $record->home_score.' - '.$record->away_score),
+                TextColumn::make('starts_at')->label('Inicio')->dateTime()->sortable(),
+                TextColumn::make('prediction_closes_at')->label('Cierre pronosticos')->dateTime()->sortable(),
+                TextColumn::make('status')->label('Estado')->badge(),
+                TextColumn::make('score')->label('Marcador')->state(fn ($record) => $record->home_score === null ? '-' : $record->home_score.' - '.$record->away_score),
             ])
             ->filters([
                 TrashedFilter::make(),

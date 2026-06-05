@@ -18,11 +18,11 @@ class TournamentsTable
     {
         return $table
             ->columns([
-                TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('status')->badge()->sortable(),
-                TextColumn::make('starts_at')->dateTime()->sortable(),
-                TextColumn::make('entry_fee')->money('PEN')->sortable(),
-                IconColumn::make('is_active')->boolean(),
+                TextColumn::make('name')->label('Torneo')->searchable()->sortable(),
+                TextColumn::make('status')->label('Estado')->badge()->sortable(),
+                TextColumn::make('starts_at')->label('Inicio')->dateTime()->sortable(),
+                TextColumn::make('entry_fee')->label('Inscripcion')->money('PEN')->sortable(),
+                IconColumn::make('is_active')->label('Activo')->boolean(),
             ])
             ->filters([
                 TrashedFilter::make(),

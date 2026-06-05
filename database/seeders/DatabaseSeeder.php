@@ -58,11 +58,9 @@ class DatabaseSeeder extends Seeder
             return $user;
         });
 
-        $teams = collect(['Mexico', 'Canada', 'Argentina', 'Brasil', 'Peru', 'Alemania', 'Francia', 'Espana'])
-            ->mapWithKeys(fn (string $name) => [$name => Team::updateOrCreate(
-                ['slug' => Str::slug($name)],
-                ['name' => $name, 'fifa_code' => strtoupper(substr($name, 0, 3)), 'country' => $name, 'is_active' => true]
-            )]);
+        $this->call(WorldCup2026TeamsSeeder::class);
+
+        $teams = Team::query()->get()->keyBy('name');
 
         $tournament = Tournament::updateOrCreate(
             ['slug' => 'mundial-demo-2026'],
@@ -87,17 +85,22 @@ class DatabaseSeeder extends Seeder
             ['type' => 'group_stage', 'order' => 1, 'is_active' => true]
         );
 
-        $group = TournamentGroup::updateOrCreate(
-            ['phase_id' => $phase->id, 'name' => 'Grupo A'],
-            ['tournament_id' => $tournament->id, 'order' => 1]
-        );
-        $group->teams()->sync($teams->take(4)->pluck('id')->all());
+        foreach (collect(WorldCup2026TeamsSeeder::TEAMS)->groupBy('group') as $groupName => $groupTeams) {
+            $group = TournamentGroup::updateOrCreate(
+                ['phase_id' => $phase->id, 'name' => 'Grupo '.$groupName],
+                ['tournament_id' => $tournament->id, 'order' => ord($groupName) - 64]
+            );
+            $group->teams()->sync(Team::whereIn('name', $groupTeams->pluck('name'))->pluck('id')->all());
+        }
+
+        $groupA = TournamentGroup::where('phase_id', $phase->id)->where('name', 'Grupo A')->first();
+        $groupD = TournamentGroup::where('phase_id', $phase->id)->where('name', 'Grupo D')->first();
 
         $matchOne = FootballMatch::updateOrCreate(
-            ['tournament_id' => $tournament->id, 'home_team_id' => $teams['Mexico']->id, 'away_team_id' => $teams['Canada']->id],
+            ['tournament_id' => $tournament->id, 'home_team_id' => $teams['Mexico']->id, 'away_team_id' => $teams['South Africa']->id],
             [
                 'phase_id' => $phase->id,
-                'group_id' => $group->id,
+                'group_id' => $groupA->id,
                 'starts_at' => now()->subHours(4),
                 'prediction_closes_at' => now()->subHours(5),
                 'status' => 'finished',
@@ -109,10 +112,10 @@ class DatabaseSeeder extends Seeder
         );
 
         $matchTwo = FootballMatch::updateOrCreate(
-            ['tournament_id' => $tournament->id, 'home_team_id' => $teams['Argentina']->id, 'away_team_id' => $teams['Brasil']->id],
+            ['tournament_id' => $tournament->id, 'home_team_id' => $teams['USA']->id, 'away_team_id' => $teams['Paraguay']->id],
             [
                 'phase_id' => $phase->id,
-                'group_id' => $group->id,
+                'group_id' => $groupD->id,
                 'starts_at' => now()->addDay(),
                 'prediction_closes_at' => now()->addHours(20),
                 'status' => 'scheduled',

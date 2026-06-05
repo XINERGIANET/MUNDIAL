@@ -22,6 +22,14 @@ class FootballMatchResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $modelLabel = 'partido';
+
+    protected static ?string $pluralModelLabel = 'partidos';
+
+    protected static ?string $navigationLabel = 'Partidos';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Operaciones';
+
     public static function form(Schema $schema): Schema
     {
         return FootballMatchForm::configure($schema);

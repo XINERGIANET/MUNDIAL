@@ -22,6 +22,14 @@ class TournamentGroupResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $modelLabel = 'grupo';
+
+    protected static ?string $pluralModelLabel = 'grupos';
+
+    protected static ?string $navigationLabel = 'Grupos';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Torneos';
+
     public static function form(Schema $schema): Schema
     {
         return TournamentGroupForm::configure($schema);

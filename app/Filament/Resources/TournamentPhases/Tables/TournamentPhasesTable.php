@@ -18,11 +18,11 @@ class TournamentPhasesTable
     {
         return $table
             ->columns([
-                TextColumn::make('tournament.name')->searchable()->sortable(),
-                TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('type')->badge(),
-                TextColumn::make('order')->sortable(),
-                IconColumn::make('is_active')->boolean(),
+                TextColumn::make('tournament.name')->label('Torneo')->searchable()->sortable(),
+                TextColumn::make('name')->label('Fase')->searchable()->sortable(),
+                TextColumn::make('type')->label('Tipo')->badge(),
+                TextColumn::make('order')->label('Orden')->sortable(),
+                IconColumn::make('is_active')->label('Activo')->boolean(),
             ])
             ->filters([
                 TrashedFilter::make(),

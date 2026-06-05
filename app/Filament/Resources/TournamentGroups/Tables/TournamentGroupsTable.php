@@ -17,9 +17,9 @@ class TournamentGroupsTable
     {
         return $table
             ->columns([
-                TextColumn::make('tournament.name')->searchable(),
-                TextColumn::make('phase.name')->searchable(),
-                TextColumn::make('name')->searchable()->sortable(),
+                TextColumn::make('tournament.name')->label('Torneo')->searchable(),
+                TextColumn::make('phase.name')->label('Fase')->searchable(),
+                TextColumn::make('name')->label('Grupo')->searchable()->sortable(),
                 TextColumn::make('teams_count')->counts('teams')->label('Equipos'),
             ])
             ->filters([

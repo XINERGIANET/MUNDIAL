@@ -20,6 +20,14 @@ class TournamentRankingResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $modelLabel = 'ranking';
+
+    protected static ?string $pluralModelLabel = 'rankings';
+
+    protected static ?string $navigationLabel = 'Ranking';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Reportes';
+
     public static function form(Schema $schema): Schema
     {
         return TournamentRankingForm::configure($schema);

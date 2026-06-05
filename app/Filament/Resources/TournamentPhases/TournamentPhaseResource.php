@@ -22,6 +22,14 @@ class TournamentPhaseResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $modelLabel = 'fase';
+
+    protected static ?string $pluralModelLabel = 'fases';
+
+    protected static ?string $navigationLabel = 'Fases';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Torneos';
+
     public static function form(Schema $schema): Schema
     {
         return TournamentPhaseForm::configure($schema);

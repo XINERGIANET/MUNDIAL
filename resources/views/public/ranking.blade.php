@@ -1,11 +1,14 @@
 <x-guest-layout>
-    <div class="min-h-screen bg-gray-50 px-4 py-10">
+    <div class="min-h-screen bg-[#f6f8fb] px-4 py-10">
         <div class="max-w-5xl mx-auto">
             <div class="mb-6 flex items-center justify-between">
-                <h1 class="text-3xl font-bold text-gray-950">Ranking {{ $tournament->name }}</h1>
+                <div>
+                    <p class="text-sm font-black uppercase tracking-wide text-red-600">Tabla general</p>
+                    <h1 class="text-3xl font-black text-gray-950">Ranking {{ $tournament->name }}</h1>
+                </div>
                 <a href="{{ route('home') }}" class="text-sm font-medium text-blue-700">Inicio</a>
             </div>
-            <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+            <div class="wc-card overflow-hidden rounded-lg">
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50 text-left text-gray-600">
                         <tr>

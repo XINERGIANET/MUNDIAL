@@ -22,6 +22,14 @@ class TeamResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $modelLabel = 'equipo';
+
+    protected static ?string $pluralModelLabel = 'equipos';
+
+    protected static ?string $navigationLabel = 'Equipos';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Torneos';
+
     public static function form(Schema $schema): Schema
     {
         return TeamForm::configure($schema);

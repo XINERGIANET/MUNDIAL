@@ -18,12 +18,12 @@ class TournamentParticipantsTable
     {
         return $table
             ->columns([
-                TextColumn::make('tournament.name')->searchable(),
-                TextColumn::make('user.name')->searchable(),
-                TextColumn::make('user.phone')->searchable(),
-                TextColumn::make('status')->badge(),
-                TextColumn::make('payment_status')->badge(),
-                TextColumn::make('approved_at')->dateTime(),
+                TextColumn::make('tournament.name')->label('Torneo')->searchable(),
+                TextColumn::make('user.name')->label('Usuario')->searchable(),
+                TextColumn::make('user.phone')->label('Celular')->searchable(),
+                TextColumn::make('status')->label('Estado')->badge(),
+                TextColumn::make('payment_status')->label('Pago')->badge(),
+                TextColumn::make('approved_at')->label('Aprobado')->dateTime(),
             ])
             ->filters([
                 TrashedFilter::make(),

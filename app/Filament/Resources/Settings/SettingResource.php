@@ -20,6 +20,14 @@ class SettingResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $modelLabel = 'configuracion';
+
+    protected static ?string $pluralModelLabel = 'configuracion';
+
+    protected static ?string $navigationLabel = 'Configuracion';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Administracion';
+
     public static function form(Schema $schema): Schema
     {
         return SettingForm::configure($schema);

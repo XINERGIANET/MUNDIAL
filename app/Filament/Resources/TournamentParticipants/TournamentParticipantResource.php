@@ -22,6 +22,14 @@ class TournamentParticipantResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $modelLabel = 'participante';
+
+    protected static ?string $pluralModelLabel = 'participantes';
+
+    protected static ?string $navigationLabel = 'Participantes';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Operaciones';
+
     public static function form(Schema $schema): Schema
     {
         return TournamentParticipantForm::configure($schema);
