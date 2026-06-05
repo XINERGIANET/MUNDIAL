@@ -14,7 +14,7 @@
 
     <div class="pb-12">
         <section class="wc-shell">
-            <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            <div class="w-full px-4 py-8 sm:px-6 lg:px-8">
                 <div class="grid gap-4 md:grid-cols-4">
                     <div class="rounded-lg bg-white/10 p-5 text-white ring-1 ring-white/20">
                         <p class="text-sm text-white/75">Torneos aprobados</p>
@@ -36,12 +36,12 @@
             </div>
         </section>
 
-        <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+        <div class="w-full px-4 py-8 sm:px-6 lg:px-8 space-y-8">
             @if (session('status'))
                 <div class="rounded-lg bg-green-50 p-4 text-sm font-medium text-green-800 ring-1 ring-green-200">{{ session('status') }}</div>
             @endif
 
-            <section class="grid gap-6 lg:grid-cols-[1fr_360px]">
+            <section class="grid gap-6 xl:grid-cols-[1fr_420px]">
                 <div>
                     <div class="mb-4 flex items-end justify-between">
                         <div>

@@ -13,7 +13,6 @@ use App\Models\User;
 use App\Services\RankingService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
@@ -60,15 +59,13 @@ class DatabaseSeeder extends Seeder
 
         $this->call(WorldCup2026TeamsSeeder::class);
 
-        $teams = Team::query()->get()->keyBy('name');
-
         $tournament = Tournament::updateOrCreate(
             ['slug' => 'mundial-demo-2026'],
             [
-                'name' => 'Mundial Demo 2026',
-                'description' => 'Torneo de prueba para la polla mundialista.',
-                'starts_at' => now()->subDay(),
-                'ends_at' => now()->addMonth(),
+                'name' => 'Mundial 2026',
+                'description' => 'Polla oficial de prueba con selecciones, grupos y calendario del Mundial 2026.',
+                'starts_at' => '2026-06-11 15:00:00',
+                'ends_at' => '2026-07-19 15:00:00',
                 'status' => 'open',
                 'entry_fee' => 20,
                 'currency' => 'PEN',
@@ -93,34 +90,10 @@ class DatabaseSeeder extends Seeder
             $group->teams()->sync(Team::whereIn('name', $groupTeams->pluck('name'))->pluck('id')->all());
         }
 
-        $groupA = TournamentGroup::where('phase_id', $phase->id)->where('name', 'Grupo A')->first();
-        $groupD = TournamentGroup::where('phase_id', $phase->id)->where('name', 'Grupo D')->first();
+        $this->call(WorldCup2026MatchesSeeder::class);
 
-        $matchOne = FootballMatch::updateOrCreate(
-            ['tournament_id' => $tournament->id, 'home_team_id' => $teams['Mexico']->id, 'away_team_id' => $teams['South Africa']->id],
-            [
-                'phase_id' => $phase->id,
-                'group_id' => $groupA->id,
-                'starts_at' => now()->subHours(4),
-                'prediction_closes_at' => now()->subHours(5),
-                'status' => 'finished',
-                'home_score' => 2,
-                'away_score' => 2,
-                'result_registered_by' => $admin->id,
-                'result_registered_at' => now()->subHour(),
-            ]
-        );
-
-        $matchTwo = FootballMatch::updateOrCreate(
-            ['tournament_id' => $tournament->id, 'home_team_id' => $teams['USA']->id, 'away_team_id' => $teams['Paraguay']->id],
-            [
-                'phase_id' => $phase->id,
-                'group_id' => $groupD->id,
-                'starts_at' => now()->addDay(),
-                'prediction_closes_at' => now()->addHours(20),
-                'status' => 'scheduled',
-            ]
-        );
+        $matchOne = FootballMatch::query()->where('tournament_id', $tournament->id)->orderBy('starts_at')->first();
+        $matchTwo = FootballMatch::query()->where('tournament_id', $tournament->id)->orderBy('starts_at')->skip(1)->first();
 
         foreach ($users as $user) {
             TournamentParticipant::updateOrCreate(
@@ -129,7 +102,7 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        $scores = [[2, 2], [1, 1], [2, 1]];
+        $scores = [[2, 1], [1, 1], [0, 2]];
         foreach ($users->values() as $index => $user) {
             Prediction::updateOrCreate(
                 ['match_id' => $matchOne->id, 'user_id' => $user->id],
@@ -149,8 +122,6 @@ class DatabaseSeeder extends Seeder
                 ]
             );
         }
-
-        app(RankingService::class)->recalculateMatchPredictions($matchOne->fresh());
         app(RankingService::class)->recalculateTournamentRanking($tournament);
     }
 }

@@ -20,7 +20,7 @@ class FootballMatchResource extends Resource
 {
     protected static ?string $model = FootballMatch::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
     protected static ?string $modelLabel = 'partido';
 

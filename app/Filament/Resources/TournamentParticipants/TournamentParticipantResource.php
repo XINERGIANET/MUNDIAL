@@ -20,7 +20,7 @@ class TournamentParticipantResource extends Resource
 {
     protected static ?string $model = TournamentParticipant::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
     protected static ?string $modelLabel = 'participante';
 

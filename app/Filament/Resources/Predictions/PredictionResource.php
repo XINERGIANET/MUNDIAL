@@ -18,7 +18,7 @@ class PredictionResource extends Resource
 {
     protected static ?string $model = Prediction::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPencilSquare;
 
     protected static ?string $modelLabel = 'pronostico';
 

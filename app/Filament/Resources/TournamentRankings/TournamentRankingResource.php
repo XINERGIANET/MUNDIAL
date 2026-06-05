@@ -18,7 +18,7 @@ class TournamentRankingResource extends Resource
 {
     protected static ?string $model = TournamentRanking::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
     protected static ?string $modelLabel = 'ranking';
 
