@@ -140,46 +140,71 @@
                                             </span>
                                         </div>
 
-                                        <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                                            <div class="flex items-center gap-3">
-                                                @if ($homeTeam?->logo_path)
-                                                    <img src="{{ $homeTeam->logo_path }}" alt="{{ $homeTeam->name }}" class="h-10 w-14 rounded object-cover ring-1 ring-gray-200">
-                                                @endif
-                                                <div>
-                                                    <p class="font-black text-gray-950">{{ $homeTeam?->name ?? 'Equipo por definir' }}</p>
-                                                    <p class="text-xs text-gray-500">Local</p>
+                                        @if ($isOpen)
+                                            <form method="POST" action="{{ route('predictions.store', $match) }}" class="grid grid-cols-[minmax(0,1fr)_4rem_2.5rem_4rem_minmax(0,1fr)] items-center gap-2 xl:col-span-2 xl:grid-cols-[minmax(220px,1fr)_4.5rem_3rem_4.5rem_minmax(220px,1fr)_106px] xl:gap-4">
+                                                @csrf
+
+                                                <div class="flex min-w-0 items-center gap-3">
+                                                    @if ($homeTeam?->logo_path)
+                                                        <img src="{{ $homeTeam->logo_path }}" alt="{{ $homeTeam->name }}" class="h-10 w-14 shrink-0 rounded object-cover ring-1 ring-gray-200">
+                                                    @endif
+                                                    <div class="min-w-0">
+                                                        <p class="truncate font-black text-gray-950">{{ $homeTeam?->name ?? 'Equipo por definir' }}</p>
+                                                        <p class="text-xs text-gray-500">Local</p>
+                                                    </div>
+                                                </div>
+
+                                                <input name="predicted_home_score" type="number" min="0" max="30" value="{{ old('predicted_home_score', $prediction?->predicted_home_score) }}" class="h-12 w-full rounded-lg border-gray-300 text-center text-xl font-black" required>
+
+                                                <div class="grid h-11 place-items-center rounded-lg bg-gray-100 px-2 text-sm font-black text-gray-500">VS</div>
+
+                                                <input name="predicted_away_score" type="number" min="0" max="30" value="{{ old('predicted_away_score', $prediction?->predicted_away_score) }}" class="h-12 w-full rounded-lg border-gray-300 text-center text-xl font-black" required>
+
+                                                <div class="flex min-w-0 items-center justify-end gap-3 text-right">
+                                                    <div class="min-w-0">
+                                                        <p class="truncate font-black text-gray-950">{{ $awayTeam?->name ?? 'Equipo por definir' }}</p>
+                                                        <p class="text-xs text-gray-500">Visitante</p>
+                                                    </div>
+                                                    @if ($awayTeam?->logo_path)
+                                                        <img src="{{ $awayTeam->logo_path }}" alt="{{ $awayTeam->name }}" class="h-10 w-14 shrink-0 rounded object-cover ring-1 ring-gray-200">
+                                                    @endif
+                                                </div>
+
+                                                <button class="col-span-5 rounded-lg bg-blue-700 px-4 py-3 text-sm font-black text-white hover:bg-blue-800 xl:col-span-1">Guardar</button>
+                                            </form>
+                                        @else
+                                            <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                                                <div class="flex items-center gap-3">
+                                                    @if ($homeTeam?->logo_path)
+                                                        <img src="{{ $homeTeam->logo_path }}" alt="{{ $homeTeam->name }}" class="h-10 w-14 rounded object-cover ring-1 ring-gray-200">
+                                                    @endif
+                                                    <div>
+                                                        <p class="font-black text-gray-950">{{ $homeTeam?->name ?? 'Equipo por definir' }}</p>
+                                                        <p class="text-xs text-gray-500">Local</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="rounded-lg bg-gray-100 px-3 py-2 text-sm font-black text-gray-500">
+                                                    @if ($isFinished)
+                                                        {{ $match->home_score }} - {{ $match->away_score }}
+                                                    @else
+                                                        VS
+                                                    @endif
+                                                </div>
+
+                                                <div class="flex items-center justify-end gap-3 text-right">
+                                                    <div>
+                                                        <p class="font-black text-gray-950">{{ $awayTeam?->name ?? 'Equipo por definir' }}</p>
+                                                        <p class="text-xs text-gray-500">Visitante</p>
+                                                    </div>
+                                                    @if ($awayTeam?->logo_path)
+                                                        <img src="{{ $awayTeam->logo_path }}" alt="{{ $awayTeam->name }}" class="h-10 w-14 rounded object-cover ring-1 ring-gray-200">
+                                                    @endif
                                                 </div>
                                             </div>
 
-                                            <div class="rounded-lg bg-gray-100 px-3 py-2 text-sm font-black text-gray-500">
-                                                @if ($isFinished)
-                                                    {{ $match->home_score }} - {{ $match->away_score }}
-                                                @else
-                                                    VS
-                                                @endif
-                                            </div>
-
-                                            <div class="flex items-center justify-end gap-3 text-right">
-                                                <div>
-                                                    <p class="font-black text-gray-950">{{ $awayTeam?->name ?? 'Equipo por definir' }}</p>
-                                                    <p class="text-xs text-gray-500">Visitante</p>
-                                                </div>
-                                                @if ($awayTeam?->logo_path)
-                                                    <img src="{{ $awayTeam->logo_path }}" alt="{{ $awayTeam->name }}" class="h-10 w-14 rounded object-cover ring-1 ring-gray-200">
-                                                @endif
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            @if ($isOpen)
-                                                <form method="POST" action="{{ route('predictions.store', $match) }}" class="flex items-center gap-2">
-                                                    @csrf
-                                                    <input name="predicted_home_score" type="number" min="0" max="30" value="{{ old('predicted_home_score', $prediction?->predicted_home_score) }}" class="h-12 w-16 rounded-lg border-gray-300 text-center text-xl font-black" required>
-                                                    <span class="font-black text-gray-400">-</span>
-                                                    <input name="predicted_away_score" type="number" min="0" max="30" value="{{ old('predicted_away_score', $prediction?->predicted_away_score) }}" class="h-12 w-16 rounded-lg border-gray-300 text-center text-xl font-black" required>
-                                                    <button class="ml-auto rounded-lg bg-blue-700 px-4 py-3 text-sm font-black text-white hover:bg-blue-800">Guardar</button>
-                                                </form>
-                                            @elseif ($prediction)
+                                            <div>
+                                                @if ($prediction)
                                                 <div class="rounded-lg bg-gray-50 p-3 ring-1 ring-gray-200">
                                                     <p class="text-xs font-bold uppercase text-gray-500">Tu pronostico</p>
                                                     <p class="text-lg font-black text-gray-950">{{ $prediction->predicted_home_score }} - {{ $prediction->predicted_away_score }}</p>
@@ -188,7 +213,8 @@
                                             @else
                                                 <div class="rounded-lg bg-gray-50 p-3 text-sm font-semibold text-gray-500 ring-1 ring-gray-200">Sin pronostico disponible</div>
                                             @endif
-                                        </div>
+                                            </div>
+                                        @endif
                                     </article>
                                 @endforeach
                             </div>
