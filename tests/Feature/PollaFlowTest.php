@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\FootballMatches\Pages\QuickFootballMatchResults;
 use App\Models\FootballMatch;
 use App\Models\PhoneVerificationCode;
 use App\Models\Prediction;
@@ -17,6 +18,7 @@ use App\Services\PredictionScoringService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Queue;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class PollaFlowTest extends TestCase
@@ -228,6 +230,29 @@ class PollaFlowTest extends TestCase
             'user_id' => $user->id,
             'points_awarded' => 5,
             'result_type' => 'exact_score',
+        ]);
+    }
+
+    public function test_quick_results_page_can_save_scores_for_admin(): void
+    {
+        [$user, $tournament, $match] = $this->approvedSetup();
+        $admin = User::factory()->create();
+
+        Prediction::create(['tournament_id' => $tournament->id, 'match_id' => $match->id, 'user_id' => $user->id, 'predicted_home_score' => 2, 'predicted_away_score' => 1]);
+
+        Livewire::actingAs($admin)
+            ->test(QuickFootballMatchResults::class)
+            ->set('scores', [
+                $match->id => ['home_score' => 2, 'away_score' => 1],
+            ])
+            ->call('save');
+
+        $this->assertDatabaseHas('matches', [
+            'id' => $match->id,
+            'home_score' => 2,
+            'away_score' => 1,
+            'status' => 'finished',
+            'result_registered_by' => $admin->id,
         ]);
     }
 

@@ -24,8 +24,6 @@ class QuickFootballMatchResults extends Page
 
     public function mount(): void
     {
-        $this->authorizeAccess();
-
         foreach ($this->matches() as $match) {
             $this->scores[$match->id] = [
                 'home_score' => $match->home_score,
