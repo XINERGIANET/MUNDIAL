@@ -30,6 +30,8 @@ class QuickFootballMatchResults extends Page
                 'away_score' => $match->away_score,
             ];
         }
+
+        $this->randomize();
     }
 
     public function getTitle(): string|Htmlable
