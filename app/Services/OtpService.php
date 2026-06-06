@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Jobs\SendOtpCodeJob;
 use App\Models\PhoneVerificationCode;
 use App\Models\User;
+use App\Services\Otp\OtpSenderInterface;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -46,7 +47,7 @@ class OtpService
                     'message' => 'El envio fue puesto en la cola local. Ejecuta el worker para obtener la respuesta de Twilio.',
                 ];
             } else {
-                $delivery = SendOtpCodeJob::dispatchSync($user, $code, $channel);
+                $delivery = app(OtpSenderInterface::class)->send($user, $code, $channel);
             }
         } catch (Throwable $exception) {
             $verification->delete();

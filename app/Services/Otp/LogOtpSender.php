@@ -21,6 +21,7 @@ class LogOtpSender implements OtpSenderInterface
             'channel' => $channel,
             'status' => 'logged',
             'to' => $user->phone_normalized ?: $user->phone,
+            'message' => 'OTP_PROVIDER esta en log. No se envio SMS real; el codigo queda en storage/logs/laravel.log.',
         ];
     }
 }

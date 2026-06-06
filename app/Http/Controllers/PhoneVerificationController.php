@@ -58,7 +58,9 @@ class PhoneVerificationController extends Controller
             $delivery = $result['delivery'];
             $message = ($delivery['provider'] ?? null) === 'twilio'
                 ? 'Twilio acepto la solicitud por '.($data['otp_channel'] === 'sms' ? 'SMS' : 'WhatsApp').' con estado '.($delivery['status'] ?? 'desconocido').'. Esto no confirma entrega al celular.'
-                : 'Enviamos un nuevo codigo por '.($data['otp_channel'] === 'sms' ? 'SMS.' : 'WhatsApp.');
+                : (($delivery['provider'] ?? null) === 'log'
+                    ? 'No se envio SMS real porque OTP_PROVIDER esta en log. Revisa storage/logs/laravel.log.'
+                    : ($delivery['message'] ?? 'Enviamos un nuevo codigo por '.($data['otp_channel'] === 'sms' ? 'SMS.' : 'WhatsApp.')));
 
             if ($request->expectsJson()) {
                 return response()->json([
