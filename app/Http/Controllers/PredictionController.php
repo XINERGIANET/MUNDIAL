@@ -15,6 +15,7 @@ class PredictionController extends Controller
 
         abort_unless($user->hasVerifiedPhone(), 403);
         abort_if(! $match->isPredictionOpen(), 403, 'El pronostico para este partido ya esta cerrado.');
+        abort_unless($match->homeTeam && $match->awayTeam, 403, 'Este partido no tiene equipos completos.');
         abort_unless($match->homeTeam->is_active && $match->awayTeam->is_active, 403, 'Este cruce aun tiene equipos por definir.');
 
         $participant = $user->participants()

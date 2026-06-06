@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-white/95 border-b border-gray-200 backdrop-blur">
+<nav x-data="{ open: false }" class="relative z-[100] bg-white/95 border-b border-gray-200 backdrop-blur">
     <!-- Primary Navigation Menu -->
     <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -21,6 +21,12 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         Inicio
                     </x-nav-link>
+
+                    @if (Auth::user()->hasAnyRole(['super_admin', 'tournament_admin']))
+                        <x-nav-link :href="url('/admin')" :active="request()->is('admin*')">
+                            Panel administrativo
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -40,6 +46,12 @@
                     </x-slot>
 
                     <x-slot name="content">
+                        @if (Auth::user()->hasAnyRole(['super_admin', 'tournament_admin']))
+                            <x-dropdown-link :href="url('/admin')">
+                                Panel administrativo
+                            </x-dropdown-link>
+                        @endif
+
                         <x-dropdown-link :href="route('profile.edit')">
                             Mi perfil
                         </x-dropdown-link>
@@ -76,6 +88,12 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 Inicio
             </x-responsive-nav-link>
+
+            @if (Auth::user()->hasAnyRole(['super_admin', 'tournament_admin']))
+                <x-responsive-nav-link :href="url('/admin')" :active="request()->is('admin*')">
+                    Panel administrativo
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
@@ -86,6 +104,12 @@
             </div>
 
             <div class="mt-3 space-y-1">
+                @if (Auth::user()->hasAnyRole(['super_admin', 'tournament_admin']))
+                    <x-responsive-nav-link :href="url('/admin')">
+                        Panel administrativo
+                    </x-responsive-nav-link>
+                @endif
+
                 <x-responsive-nav-link :href="route('profile.edit')">
                     Mi perfil
                 </x-responsive-nav-link>

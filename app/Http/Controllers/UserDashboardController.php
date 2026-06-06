@@ -35,7 +35,9 @@ class UserDashboardController extends Controller
                 'awayTeam',
                 'predictions' => fn ($query) => $query->where('user_id', $user->id),
             ])
-            ->whereIn('tournament_id', $approvedTournamentIds);
+            ->whereIn('tournament_id', $approvedTournamentIds)
+            ->whereHas('homeTeam')
+            ->whereHas('awayTeam');
 
         if ($selectedTournament) {
             $matchesQuery->where('tournament_id', $selectedTournament->id);

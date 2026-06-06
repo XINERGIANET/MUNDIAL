@@ -87,6 +87,19 @@
                 <div class="mb-6 rounded-lg bg-green-50 p-4 text-sm font-medium text-green-800 ring-1 ring-green-200">{{ session('status') }}</div>
             @endif
 
+            @if (auth()->user()->hasAnyRole(['super_admin', 'tournament_admin']))
+                <div class="mb-6 flex flex-col gap-4 rounded-xl border border-blue-200 bg-blue-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm font-black uppercase tracking-wide text-blue-700">Administracion</p>
+                        <h2 class="text-xl font-black text-gray-950">Gestiona torneos, partidos, pagos y resultados</h2>
+                        <p class="mt-1 text-sm text-gray-600">Tu usuario tiene permisos administrativos. Puedes ir al panel de gestion desde aqui.</p>
+                    </div>
+                    <a href="{{ url('/admin') }}" class="rounded-lg bg-blue-700 px-5 py-3 text-center text-sm font-black text-white hover:bg-blue-800">
+                        Ir al panel administrativo
+                    </a>
+                </div>
+            @endif
+
             <div class="grid gap-6 2xl:grid-cols-[1fr_420px]">
                 <main class="space-y-6">
                     <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -97,7 +110,7 @@
                         <p class="text-sm font-semibold text-gray-500">{{ $tournamentMatches->count() }} partidos encontrados</p>
                     </div>
 
-                    @forelse ($tournamentMatches->groupBy(fn ($match) => $match->group?->name ?? $match->phase->name) as $groupName => $matches)
+                    @forelse ($tournamentMatches->groupBy(fn ($match) => $match->group?->name ?? $match->phase?->name ?? 'Sin grupo') as $groupName => $matches)
                         <section class="wc-card overflow-hidden rounded-xl">
                             <div class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-5 py-4">
                                 <div>
@@ -111,7 +124,10 @@
                                 @foreach ($matches as $match)
                                     @php
                                         $prediction = $match->predictions->first();
-                                        $isOpen = $match->isPredictionOpen() && $match->homeTeam->is_active && $match->awayTeam->is_active;
+                                        $homeTeam = $match->homeTeam;
+                                        $awayTeam = $match->awayTeam;
+                                        $hasTeams = $homeTeam && $awayTeam;
+                                        $isOpen = $hasTeams && $match->isPredictionOpen() && $homeTeam->is_active && $awayTeam->is_active;
                                         $isFinished = $match->status === 'finished';
                                     @endphp
 
@@ -126,11 +142,11 @@
 
                                         <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                                             <div class="flex items-center gap-3">
-                                                @if ($match->homeTeam->logo_path)
-                                                    <img src="{{ $match->homeTeam->logo_path }}" alt="{{ $match->homeTeam->name }}" class="h-10 w-14 rounded object-cover ring-1 ring-gray-200">
+                                                @if ($homeTeam?->logo_path)
+                                                    <img src="{{ $homeTeam->logo_path }}" alt="{{ $homeTeam->name }}" class="h-10 w-14 rounded object-cover ring-1 ring-gray-200">
                                                 @endif
                                                 <div>
-                                                    <p class="font-black text-gray-950">{{ $match->homeTeam->name }}</p>
+                                                    <p class="font-black text-gray-950">{{ $homeTeam?->name ?? 'Equipo por definir' }}</p>
                                                     <p class="text-xs text-gray-500">Local</p>
                                                 </div>
                                             </div>
@@ -145,11 +161,11 @@
 
                                             <div class="flex items-center justify-end gap-3 text-right">
                                                 <div>
-                                                    <p class="font-black text-gray-950">{{ $match->awayTeam->name }}</p>
+                                                    <p class="font-black text-gray-950">{{ $awayTeam?->name ?? 'Equipo por definir' }}</p>
                                                     <p class="text-xs text-gray-500">Visitante</p>
                                                 </div>
-                                                @if ($match->awayTeam->logo_path)
-                                                    <img src="{{ $match->awayTeam->logo_path }}" alt="{{ $match->awayTeam->name }}" class="h-10 w-14 rounded object-cover ring-1 ring-gray-200">
+                                                @if ($awayTeam?->logo_path)
+                                                    <img src="{{ $awayTeam->logo_path }}" alt="{{ $awayTeam->name }}" class="h-10 w-14 rounded object-cover ring-1 ring-gray-200">
                                                 @endif
                                             </div>
                                         </div>
