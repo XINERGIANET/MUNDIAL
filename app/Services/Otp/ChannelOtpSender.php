@@ -6,15 +6,13 @@ use App\Models\User;
 
 class ChannelOtpSender implements OtpSenderInterface
 {
-    public function send(User $user, string $plainCode, string $channel): void
+    public function send(User $user, string $plainCode, string $channel): array
     {
         if (config('polla.otp_provider') === 'log') {
-            app(LogOtpSender::class)->send($user, $plainCode, $channel);
-
-            return;
+            return app(LogOtpSender::class)->send($user, $plainCode, $channel);
         }
 
-        match ($channel) {
+        return match ($channel) {
             'whatsapp' => app(WhatsAppOtpSender::class)->send($user, $plainCode, $channel),
             default => app(SmsOtpSender::class)->send($user, $plainCode, $channel),
         };

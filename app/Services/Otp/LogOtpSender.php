@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 
 class LogOtpSender implements OtpSenderInterface
 {
-    public function send(User $user, string $plainCode, string $channel): void
+    public function send(User $user, string $plainCode, string $channel): array
     {
         Log::info('OTP verification code generated', [
             'user_id' => $user->id,
@@ -15,5 +15,12 @@ class LogOtpSender implements OtpSenderInterface
             'channel' => $channel,
             'code' => $plainCode,
         ]);
+
+        return [
+            'provider' => 'log',
+            'channel' => $channel,
+            'status' => 'logged',
+            'to' => $user->phone_normalized ?: $user->phone,
+        ];
     }
 }

@@ -13,6 +13,11 @@ class OtpService
 {
     public function issue(User $user, string $channel, ?string $ip = null, ?string $userAgent = null): PhoneVerificationCode
     {
+        return $this->issueWithResult($user, $channel, $ip, $userAgent)['verification'];
+    }
+
+    public function issueWithResult(User $user, string $channel, ?string $ip = null, ?string $userAgent = null): array
+    {
         $latest = $user->phoneVerificationCodes()->latest()->first();
 
         if ($latest && $latest->created_at->gt(now()->subSeconds(config('polla.otp_resend_seconds')))) {
@@ -34,8 +39,14 @@ class OtpService
         try {
             if (config('polla.otp_queue')) {
                 SendOtpCodeJob::dispatch($user, $code, $channel);
+                $delivery = [
+                    'provider' => config('polla.otp_provider'),
+                    'channel' => $channel,
+                    'status' => 'queued_locally',
+                    'message' => 'El envio fue puesto en la cola local. Ejecuta el worker para obtener la respuesta de Twilio.',
+                ];
             } else {
-                SendOtpCodeJob::dispatchSync($user, $code, $channel);
+                $delivery = SendOtpCodeJob::dispatchSync($user, $code, $channel);
             }
         } catch (Throwable $exception) {
             $verification->delete();
@@ -43,7 +54,10 @@ class OtpService
             throw $exception;
         }
 
-        return $verification;
+        return [
+            'verification' => $verification,
+            'delivery' => $delivery,
+        ];
     }
 
     public function verify(User $user, string $code): void

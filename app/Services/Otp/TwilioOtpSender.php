@@ -9,7 +9,7 @@ use RuntimeException;
 
 class TwilioOtpSender
 {
-    public function sendSms(User $user, string $plainCode): void
+    public function sendSms(User $user, string $plainCode): array
     {
         $from = config('polla.twilio_sms_from');
 
@@ -17,10 +17,10 @@ class TwilioOtpSender
             throw new RuntimeException('TWILIO_SMS_FROM no esta configurado.');
         }
 
-        $this->sendMessage($user, $plainCode, $from, $this->toE164($user));
+        return $this->sendMessage($user, $plainCode, $from, $this->toE164($user), 'sms');
     }
 
-    public function sendWhatsApp(User $user, string $plainCode): void
+    public function sendWhatsApp(User $user, string $plainCode): array
     {
         $from = config('polla.twilio_whatsapp_from');
 
@@ -28,10 +28,10 @@ class TwilioOtpSender
             throw new RuntimeException('TWILIO_WHATSAPP_FROM no esta configurado.');
         }
 
-        $this->sendMessage($user, $plainCode, $from, 'whatsapp:'.$this->toE164($user));
+        return $this->sendMessage($user, $plainCode, $from, 'whatsapp:'.$this->toE164($user), 'whatsapp');
     }
 
-    private function sendMessage(User $user, string $plainCode, string $from, string $to): void
+    private function sendMessage(User $user, string $plainCode, string $from, string $to, string $channel): array
     {
         $sid = config('polla.twilio_account_sid');
         $token = config('polla.twilio_auth_token');
@@ -55,14 +55,28 @@ class TwilioOtpSender
             throw new RuntimeException('Twilio no pudo enviar el codigo'.($code ? " ({$code})" : '').": {$message}");
         }
 
-        Log::info('Twilio OTP message accepted', [
-            'user_id' => $user->id,
-            'to' => $to,
+        $result = [
+            'provider' => 'twilio',
+            'channel' => $channel,
             'sid' => $response->json('sid'),
             'status' => $response->json('status'),
+            'to' => $response->json('to') ?: $to,
+            'from' => $response->json('from') ?: $from,
+            'price' => $response->json('price'),
+            'price_unit' => $response->json('price_unit'),
             'error_code' => $response->json('error_code'),
             'error_message' => $response->json('error_message'),
+            'date_created' => $response->json('date_created'),
+            'date_sent' => $response->json('date_sent'),
+            'uri' => $response->json('uri'),
+        ];
+
+        Log::info('Twilio OTP message accepted', [
+            'user_id' => $user->id,
+            ...$result,
         ]);
+
+        return $result;
     }
 
     private function toE164(User $user): string

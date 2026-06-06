@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\OtpService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -29,13 +30,21 @@ class PhoneVerificationController extends Controller
         return redirect()->route('dashboard')->with('status', 'Celular verificado correctamente.');
     }
 
-    public function resend(Request $request, OtpService $otpService): View
+    public function resend(Request $request, OtpService $otpService): View|JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'otp_channel' => ['required', 'in:sms,whatsapp'],
         ]);
 
         if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => $validator->errors()->first(),
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
             return view('auth.verify-phone', [
                 'sendError' => $validator->errors()->first(),
                 'selectedOtpChannel' => config('polla.otp_channel_default'),
@@ -45,18 +54,52 @@ class PhoneVerificationController extends Controller
         $data = $validator->validated();
 
         try {
-            $otpService->issue($request->user(), $data['otp_channel'], $request->ip(), $request->userAgent());
+            $result = $otpService->issueWithResult($request->user(), $data['otp_channel'], $request->ip(), $request->userAgent());
+            $message = 'Enviamos un nuevo codigo por '.($data['otp_channel'] === 'sms' ? 'SMS.' : 'WhatsApp.');
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'ok' => true,
+                    'message' => $message,
+                    'channel' => $data['otp_channel'],
+                    'verification' => [
+                        'id' => $result['verification']->id,
+                        'expires_at' => $result['verification']->expires_at?->toIso8601String(),
+                    ],
+                    'delivery' => $result['delivery'],
+                ]);
+            }
 
             return view('auth.verify-phone', [
-                'status' => 'Enviamos un nuevo codigo por '.($data['otp_channel'] === 'sms' ? 'SMS.' : 'WhatsApp.'),
+                'status' => $message,
+                'twilioResult' => $result['delivery'],
                 'selectedOtpChannel' => $data['otp_channel'],
             ]);
         } catch (ValidationException $exception) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => collect($exception->errors())->flatten()->first(),
+                    'errors' => $exception->errors(),
+                ], 422);
+            }
+
             return view('auth.verify-phone', [
                 'sendError' => collect($exception->errors())->flatten()->first(),
                 'selectedOtpChannel' => $data['otp_channel'],
             ]);
         } catch (Throwable $exception) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => $exception->getMessage(),
+                    'error' => [
+                        'type' => $exception::class,
+                        'message' => $exception->getMessage(),
+                    ],
+                ], 500);
+            }
+
             return view('auth.verify-phone', [
                 'sendError' => $exception->getMessage(),
                 'selectedOtpChannel' => $data['otp_channel'],

@@ -6,5 +6,5 @@ use App\Models\User;
 
 interface OtpSenderInterface
 {
-    public function send(User $user, string $plainCode, string $channel): void;
+    public function send(User $user, string $plainCode, string $channel): array;
 }

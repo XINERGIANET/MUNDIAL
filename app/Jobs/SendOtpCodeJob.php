@@ -19,8 +19,8 @@ class SendOtpCodeJob implements ShouldQueue
     {
     }
 
-    public function handle(OtpSenderInterface $sender): void
+    public function handle(OtpSenderInterface $sender): array
     {
-        $sender->send($this->user, $this->plainCode, $this->channel);
+        return $sender->send($this->user, $this->plainCode, $this->channel);
     }
 }
