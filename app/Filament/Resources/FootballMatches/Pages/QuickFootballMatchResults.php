@@ -54,16 +54,25 @@ class QuickFootballMatchResults extends Page
 
     public function randomize(): void
     {
+        $saved = 0;
+
         foreach ($this->matches() as $match) {
+            $homeScore = random_int(0, 4);
+            $awayScore = random_int(0, 4);
+
             $this->scores[$match->id] = [
-                'home_score' => random_int(0, 4),
-                'away_score' => random_int(0, 4),
+                'home_score' => $homeScore,
+                'away_score' => $awayScore,
             ];
+
+            if ($this->registerScore($match, $homeScore, $awayScore) === 'saved') {
+                $saved++;
+            }
         }
 
         Notification::make()
-            ->title('Marcadores aleatorios generados')
-            ->body('Revisa las casillas y guarda cuando quieras aplicar los resultados.')
+            ->title('Resultados aleatorios registrados')
+            ->body("Se guardaron {$saved} partidos aleatorios en un solo clic.")
             ->success()
             ->send();
     }
@@ -77,25 +86,15 @@ class QuickFootballMatchResults extends Page
             $homeScore = $this->scores[$match->id]['home_score'] ?? null;
             $awayScore = $this->scores[$match->id]['away_score'] ?? null;
 
-            if ($homeScore === null || $homeScore === '' || $awayScore === null || $awayScore === '') {
-                continue;
+            $status = $this->registerScore($match, $homeScore, $awayScore);
+
+            if ($status === 'saved') {
+                $saved++;
             }
 
-            if (! is_numeric($homeScore) || ! is_numeric($awayScore) || $homeScore < 0 || $awayScore < 0 || $homeScore > 30 || $awayScore > 30) {
+            if ($status === 'invalid') {
                 $invalid++;
-
-                continue;
             }
-
-            $admin = Auth::user();
-
-            if (! $admin) {
-                continue;
-            }
-
-            app(MatchResultService::class)->register($match, (int) $homeScore, (int) $awayScore, $admin);
-
-            $saved++;
         }
 
         if ($invalid > 0) {
@@ -110,5 +109,26 @@ class QuickFootballMatchResults extends Page
             ->title($saved === 1 ? '1 resultado guardado' : "{$saved} resultados guardados")
             ->success()
             ->send();
+    }
+
+    private function registerScore(FootballMatch $match, int|string|null $homeScore, int|string|null $awayScore): string
+    {
+        if ($homeScore === null || $homeScore === '' || $awayScore === null || $awayScore === '') {
+            return 'skip';
+        }
+
+        if (! is_numeric($homeScore) || ! is_numeric($awayScore) || $homeScore < 0 || $awayScore < 0 || $homeScore > 30 || $awayScore > 30) {
+            return 'invalid';
+        }
+
+        $admin = Auth::user();
+
+        if (! $admin) {
+            return 'skip';
+        }
+
+        app(MatchResultService::class)->register($match, (int) $homeScore, (int) $awayScore, $admin);
+
+        return 'saved';
     }
 }

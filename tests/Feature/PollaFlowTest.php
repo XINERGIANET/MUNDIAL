@@ -256,6 +256,27 @@ class PollaFlowTest extends TestCase
         ]);
     }
 
+    public function test_randomize_action_persists_results_immediately(): void
+    {
+        [$user, $tournament, $match] = $this->approvedSetup();
+        $admin = User::factory()->create();
+
+        Prediction::create(['tournament_id' => $tournament->id, 'match_id' => $match->id, 'user_id' => $user->id, 'predicted_home_score' => 0, 'predicted_away_score' => 0]);
+
+        Livewire::actingAs($admin)
+            ->test(QuickFootballMatchResults::class)
+            ->call('randomize');
+
+        $this->assertDatabaseHas('matches', [
+            'id' => $match->id,
+            'status' => 'finished',
+            'result_registered_by' => $admin->id,
+        ]);
+
+        $this->assertNotNull($match->fresh()->home_score);
+        $this->assertNotNull($match->fresh()->away_score);
+    }
+
     private function userAndTournament(): array
     {
         Queue::fake();

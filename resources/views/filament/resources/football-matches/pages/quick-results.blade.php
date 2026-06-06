@@ -8,7 +8,7 @@
 
             <div class="flex flex-col gap-2 sm:flex-row">
                 <button type="button" wire:click="randomize" class="rounded-lg border border-amber-300 px-4 py-2 text-sm font-bold text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-950">
-                    Generar aleatorios
+                    Generar y guardar aleatorios
                 </button>
                 <button type="button" wire:click="save" class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-bold text-white hover:bg-primary-700">
                     Guardar resultados
