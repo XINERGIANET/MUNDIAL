@@ -3,16 +3,11 @@
 namespace App\Services\Otp;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 
 class SmsOtpSender implements OtpSenderInterface
 {
     public function send(User $user, string $plainCode, string $channel): void
     {
-        Log::info('SMS OTP provider placeholder', [
-            'user_id' => $user->id,
-            'phone' => $user->phone,
-            'provider' => env('SMS_PROVIDER', 'twilio'),
-        ]);
+        app(TwilioOtpSender::class)->sendSms($user, $plainCode);
     }
 }

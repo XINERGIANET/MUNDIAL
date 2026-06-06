@@ -30,7 +30,11 @@ class OtpService
             'user_agent' => $userAgent,
         ]);
 
-        SendOtpCodeJob::dispatch($user, $code, $channel);
+        if (config('polla.otp_queue')) {
+            SendOtpCodeJob::dispatch($user, $code, $channel);
+        } else {
+            SendOtpCodeJob::dispatchSync($user, $code, $channel);
+        }
 
         return $verification;
     }
