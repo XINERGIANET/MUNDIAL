@@ -55,7 +55,10 @@ class PhoneVerificationController extends Controller
 
         try {
             $result = $otpService->issueWithResult($request->user(), $data['otp_channel'], $request->ip(), $request->userAgent());
-            $message = 'Enviamos un nuevo codigo por '.($data['otp_channel'] === 'sms' ? 'SMS.' : 'WhatsApp.');
+            $delivery = $result['delivery'];
+            $message = ($delivery['provider'] ?? null) === 'twilio'
+                ? 'Twilio acepto la solicitud por '.($data['otp_channel'] === 'sms' ? 'SMS' : 'WhatsApp').' con estado '.($delivery['status'] ?? 'desconocido').'. Esto no confirma entrega al celular.'
+                : 'Enviamos un nuevo codigo por '.($data['otp_channel'] === 'sms' ? 'SMS.' : 'WhatsApp.');
 
             if ($request->expectsJson()) {
                 return response()->json([
@@ -66,13 +69,13 @@ class PhoneVerificationController extends Controller
                         'id' => $result['verification']->id,
                         'expires_at' => $result['verification']->expires_at?->toIso8601String(),
                     ],
-                    'delivery' => $result['delivery'],
+                    'delivery' => $delivery,
                 ]);
             }
 
             return view('auth.verify-phone', [
                 'status' => $message,
-                'twilioResult' => $result['delivery'],
+                'twilioResult' => $delivery,
                 'selectedOtpChannel' => $data['otp_channel'],
             ]);
         } catch (ValidationException $exception) {
