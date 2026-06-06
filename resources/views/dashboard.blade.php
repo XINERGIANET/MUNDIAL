@@ -141,16 +141,16 @@
                                         </div>
 
                                         @if ($isOpen)
-                                            <form method="POST" action="{{ route('predictions.store', $match) }}" class="grid grid-cols-[minmax(0,1fr)_4rem_2.5rem_4rem_minmax(0,1fr)] items-center gap-2 xl:col-span-2 xl:grid-cols-[minmax(220px,1fr)_4.5rem_3rem_4.5rem_minmax(220px,1fr)_106px] xl:gap-4">
+                                            <form method="POST" action="{{ route('predictions.store', $match) }}" class="grid grid-cols-[minmax(0,1fr)_3.75rem_2.5rem_3.75rem_minmax(0,1fr)] items-start gap-2 xl:col-span-2 xl:grid-cols-[minmax(220px,1fr)_4.5rem_3rem_4.5rem_minmax(220px,1fr)_106px] xl:items-center xl:gap-4">
                                                 @csrf
 
-                                                <div class="flex min-w-0 items-center gap-3">
+                                                <div class="min-w-0 text-center xl:flex xl:items-center xl:gap-3 xl:text-left">
                                                     @if ($homeTeam?->logo_path)
-                                                        <img src="{{ $homeTeam->logo_path }}" alt="{{ $homeTeam->name }}" class="h-10 w-14 shrink-0 rounded object-cover ring-1 ring-gray-200">
+                                                        <img src="{{ $homeTeam->logo_path }}" alt="{{ $homeTeam->name }}" class="mx-auto h-10 w-14 shrink-0 rounded object-cover ring-1 ring-gray-200 xl:mx-0">
                                                     @endif
                                                     <div class="min-w-0">
-                                                        <p class="truncate font-black text-gray-950">{{ $homeTeam?->name ?? 'Equipo por definir' }}</p>
-                                                        <p class="text-xs text-gray-500">Local</p>
+                                                        <p class="mt-1 truncate text-sm font-black text-gray-950 xl:mt-0 xl:text-base">{{ $homeTeam?->name ?? 'Equipo por definir' }}</p>
+                                                        <p class="text-[11px] text-gray-500 xl:text-xs">Local</p>
                                                     </div>
                                                 </div>
 
@@ -160,13 +160,13 @@
 
                                                 <input name="predicted_away_score" type="number" min="0" max="30" value="{{ old('predicted_away_score', $prediction?->predicted_away_score) }}" class="h-12 w-full rounded-lg border-gray-300 text-center text-xl font-black" required>
 
-                                                <div class="flex min-w-0 items-center justify-end gap-3 text-right">
+                                                <div class="min-w-0 text-center xl:flex xl:items-center xl:justify-end xl:gap-3 xl:text-right">
                                                     <div class="min-w-0">
-                                                        <p class="truncate font-black text-gray-950">{{ $awayTeam?->name ?? 'Equipo por definir' }}</p>
-                                                        <p class="text-xs text-gray-500">Visitante</p>
+                                                        <p class="mt-1 truncate text-sm font-black text-gray-950 xl:mt-0 xl:text-base">{{ $awayTeam?->name ?? 'Equipo por definir' }}</p>
+                                                        <p class="text-[11px] text-gray-500 xl:text-xs">Visitante</p>
                                                     </div>
                                                     @if ($awayTeam?->logo_path)
-                                                        <img src="{{ $awayTeam->logo_path }}" alt="{{ $awayTeam->name }}" class="h-10 w-14 shrink-0 rounded object-cover ring-1 ring-gray-200">
+                                                        <img src="{{ $awayTeam->logo_path }}" alt="{{ $awayTeam->name }}" class="mx-auto h-10 w-14 shrink-0 rounded object-cover ring-1 ring-gray-200 xl:mx-0">
                                                     @endif
                                                 </div>
 
