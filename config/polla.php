@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'otp_provider' => env('OTP_PROVIDER', 'log'),
-    'otp_channel_default' => env('OTP_CHANNEL_DEFAULT', 'whatsapp'),
+    'otp_provider' => env('OTP_PROVIDER', 'sms'),
+    'otp_channel_default' => env('OTP_CHANNEL_DEFAULT', 'sms'),
     'otp_default_country_code' => env('OTP_DEFAULT_COUNTRY_CODE', '51'),
     'otp_expires_minutes' => (int) env('OTP_EXPIRES_MINUTES', 10),
     'otp_resend_seconds' => (int) env('OTP_RESEND_SECONDS', 60),

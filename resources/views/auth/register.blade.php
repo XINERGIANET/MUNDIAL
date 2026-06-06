@@ -24,8 +24,8 @@
         <div class="mt-4">
             <x-input-label for="otp_channel" value="Recibir codigo por" />
             <select id="otp_channel" name="otp_channel" class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <option value="sms" @selected(old('otp_channel', config('polla.otp_channel_default')) === 'sms')>SMS</option>
                 <option value="whatsapp" @selected(old('otp_channel', config('polla.otp_channel_default')) === 'whatsapp')>WhatsApp</option>
-                <option value="sms" @selected(old('otp_channel') === 'sms')>SMS</option>
             </select>
             <x-input-error :messages="$errors->get('otp_channel')" class="mt-2" />
         </div>
