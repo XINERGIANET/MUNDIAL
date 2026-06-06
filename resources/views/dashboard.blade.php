@@ -160,13 +160,13 @@
 
                                                 <input name="predicted_away_score" type="number" min="0" max="30" value="{{ old('predicted_away_score', $prediction?->predicted_away_score) }}" class="h-12 w-full rounded-lg border-gray-300 text-center text-xl font-black" required>
 
-                                                <div class="min-w-0 text-center xl:flex xl:items-center xl:justify-end xl:gap-3 xl:text-right">
+                                                <div class="flex min-w-0 flex-col items-center text-center xl:flex-row xl:justify-end xl:gap-3 xl:text-right">
                                                     <div class="min-w-0">
                                                         <p class="mt-1 truncate text-sm font-black text-gray-950 xl:mt-0 xl:text-base">{{ $awayTeam?->name ?? 'Equipo por definir' }}</p>
                                                         <p class="text-[11px] text-gray-500 xl:text-xs">Visitante</p>
                                                     </div>
                                                     @if ($awayTeam?->logo_path)
-                                                        <img src="{{ $awayTeam->logo_path }}" alt="{{ $awayTeam->name }}" class="mx-auto h-10 w-14 shrink-0 rounded object-cover ring-1 ring-gray-200 xl:mx-0">
+                                                        <img src="{{ $awayTeam->logo_path }}" alt="{{ $awayTeam->name }}" class="order-first mx-auto h-10 w-14 shrink-0 rounded object-cover ring-1 ring-gray-200 xl:order-none xl:mx-0">
                                                     @endif
                                                 </div>
 
