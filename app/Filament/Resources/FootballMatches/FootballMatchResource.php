@@ -5,6 +5,7 @@ namespace App\Filament\Resources\FootballMatches;
 use App\Filament\Resources\FootballMatches\Pages\CreateFootballMatch;
 use App\Filament\Resources\FootballMatches\Pages\EditFootballMatch;
 use App\Filament\Resources\FootballMatches\Pages\ListFootballMatches;
+use App\Filament\Resources\FootballMatches\Pages\QuickFootballMatchResults;
 use App\Filament\Resources\FootballMatches\Schemas\FootballMatchForm;
 use App\Filament\Resources\FootballMatches\Tables\FootballMatchesTable;
 use App\Models\FootballMatch;
@@ -51,6 +52,7 @@ class FootballMatchResource extends Resource
     {
         return [
             'index' => ListFootballMatches::route('/'),
+            'quick-results' => QuickFootballMatchResults::route('/resultados-rapidos'),
             'create' => CreateFootballMatch::route('/create'),
             'edit' => EditFootballMatch::route('/{record}/edit'),
         ];

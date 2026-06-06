@@ -24,12 +24,6 @@
 
                 <div id="resend-status" class="mb-4 hidden rounded-md p-3 text-sm"></div>
 
-                @if (isset($twilioResult))
-                    <pre class="mb-4 max-h-64 overflow-auto rounded-md bg-gray-950 p-3 text-xs text-green-100">{{ json_encode($twilioResult, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre>
-                @endif
-
-                <pre id="resend-response" class="mb-4 hidden max-h-64 overflow-auto rounded-md bg-gray-950 p-3 text-xs text-green-100"></pre>
-
                 <form method="POST" action="{{ route('phone.verify.store') }}" class="space-y-4">
                     @csrf
                     <div>
@@ -62,15 +56,12 @@
             const form = event.currentTarget;
             const button = document.getElementById('resend-code-button');
             const statusBox = document.getElementById('resend-status');
-            const responseBox = document.getElementById('resend-response');
             const formData = new FormData(form);
 
             button.disabled = true;
             button.textContent = 'Enviando...';
             statusBox.className = 'mb-4 rounded-md bg-blue-50 p-3 text-sm text-blue-700';
             statusBox.textContent = 'Enviando codigo...';
-            responseBox.classList.add('hidden');
-            responseBox.textContent = '';
 
             try {
                 const response = await fetch(form.action, {
@@ -89,18 +80,9 @@
                     ? 'mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700'
                     : 'mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700';
                 statusBox.textContent = data.message || (ok ? 'Codigo enviado.' : 'No se pudo enviar el codigo.');
-
-                responseBox.textContent = JSON.stringify(data, null, 2);
-                responseBox.classList.remove('hidden');
             } catch (error) {
                 statusBox.className = 'mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700';
                 statusBox.textContent = error.message || 'No se pudo procesar la respuesta del servidor.';
-
-                responseBox.textContent = JSON.stringify({
-                    ok: false,
-                    message: statusBox.textContent,
-                }, null, 2);
-                responseBox.classList.remove('hidden');
             } finally {
                 button.disabled = false;
                 button.textContent = 'Reenviar codigo';
