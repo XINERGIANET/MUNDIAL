@@ -43,6 +43,8 @@
             'paid' => 'Pagado',
             'waived' => 'Exonerado',
         ];
+        $predictionsFinalized = $selectedParticipant?->hasFinalizedPredictions() ?? false;
+        $canEditPredictions = $selectedTournament && $selectedParticipant?->isApproved() && ! $predictionsFinalized;
     @endphp
 
     <div class="pb-12">
@@ -87,6 +89,12 @@
                 <div class="mb-6 rounded-lg bg-green-50 p-4 text-sm font-medium text-green-800 ring-1 ring-green-200">{{ session('status') }}</div>
             @endif
 
+            @if ($errors->any())
+                <div class="mb-6 rounded-lg bg-red-50 p-4 text-sm font-medium text-red-800 ring-1 ring-red-200">
+                    {{ $errors->first() }}
+                </div>
+            @endif
+
             @if (auth()->user()->hasAnyRole(['super_admin', 'tournament_admin']))
                 <div class="mb-6 flex flex-col gap-4 rounded-xl border border-blue-200 bg-blue-50 p-5 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -106,9 +114,17 @@
                         <div>
                             <p class="text-sm font-black uppercase tracking-wide text-red-600">Calendario</p>
                             <h2 class="text-xl font-black text-gray-950">{{ $selectedTournament?->name ?? 'Sin torneo aprobado' }}</h2>
+                            @if ($predictionsFinalized)
+                                <p class="mt-1 text-sm font-semibold text-green-700">Pronosticos guardados definitivamente. Ya no se pueden editar.</p>
+                            @endif
                         </div>
                         <p class="text-sm font-semibold text-gray-500">{{ $tournamentMatches->count() }} partidos encontrados</p>
                     </div>
+
+                    @if ($canEditPredictions)
+                        <form method="POST" action="{{ route('predictions.bulk-store', $selectedTournament) }}" class="space-y-6">
+                            @csrf
+                    @endif
 
                     @forelse ($tournamentMatches->groupBy(fn ($match) => $match->group?->name ?? $match->phase?->name ?? 'Sin grupo') as $groupName => $matches)
                         <section class="wc-card overflow-hidden rounded-xl">
@@ -128,6 +144,7 @@
                                         $awayTeam = $match->awayTeam;
                                         $hasTeams = $homeTeam && $awayTeam;
                                         $isOpen = $hasTeams && $match->isPredictionOpen() && $homeTeam->is_active && $awayTeam->is_active;
+                                        $isEditable = $isOpen && $canEditPredictions;
                                         $isFinished = $match->status === 'finished';
                                     @endphp
 
@@ -140,10 +157,8 @@
                                             </span>
                                         </div>
 
-                                        @if ($isOpen)
-                                            <form method="POST" action="{{ route('predictions.store', $match) }}" class="grid grid-cols-[minmax(0,1fr)_3.75rem_2.5rem_3.75rem_minmax(0,1fr)] items-start gap-2 xl:col-span-2 xl:grid-cols-[minmax(220px,1fr)_4.5rem_3rem_4.5rem_minmax(220px,1fr)_106px] xl:items-center xl:gap-4">
-                                                @csrf
-
+                                        @if ($isEditable)
+                                            <div class="grid grid-cols-[minmax(0,1fr)_3.75rem_2.5rem_3.75rem_minmax(0,1fr)] items-start gap-2 xl:col-span-2 xl:grid-cols-[minmax(220px,1fr)_4.5rem_3rem_4.5rem_minmax(220px,1fr)] xl:items-center xl:gap-4">
                                                 <div class="min-w-0 text-center xl:flex xl:items-center xl:gap-3 xl:text-left">
                                                     @if ($homeTeam?->logo_path)
                                                         <img src="{{ $homeTeam->logo_path }}" alt="{{ $homeTeam->name }}" class="mx-auto h-10 w-14 shrink-0 rounded object-cover ring-1 ring-gray-200 xl:mx-0">
@@ -154,11 +169,11 @@
                                                     </div>
                                                 </div>
 
-                                                <input name="predicted_home_score" type="number" min="0" max="30" value="{{ old('predicted_home_score', $prediction?->predicted_home_score) }}" class="h-12 w-full rounded-lg border-gray-300 text-center text-xl font-black" required>
+                                                <input name="predictions[{{ $match->id }}][predicted_home_score]" type="number" min="0" max="30" value="{{ old('predictions.'.$match->id.'.predicted_home_score', $prediction?->predicted_home_score) }}" class="h-12 w-full rounded-lg border-gray-300 text-center text-xl font-black">
 
                                                 <div class="grid h-11 place-items-center rounded-lg bg-gray-100 px-2 text-sm font-black text-gray-500">VS</div>
 
-                                                <input name="predicted_away_score" type="number" min="0" max="30" value="{{ old('predicted_away_score', $prediction?->predicted_away_score) }}" class="h-12 w-full rounded-lg border-gray-300 text-center text-xl font-black" required>
+                                                <input name="predictions[{{ $match->id }}][predicted_away_score]" type="number" min="0" max="30" value="{{ old('predictions.'.$match->id.'.predicted_away_score', $prediction?->predicted_away_score) }}" class="h-12 w-full rounded-lg border-gray-300 text-center text-xl font-black">
 
                                                 <div class="flex min-w-0 flex-col items-center text-center xl:flex-row xl:justify-end xl:gap-3 xl:text-right">
                                                     <div class="min-w-0">
@@ -169,9 +184,7 @@
                                                         <img src="{{ $awayTeam->logo_path }}" alt="{{ $awayTeam->name }}" class="order-first mx-auto h-10 w-14 shrink-0 rounded object-cover ring-1 ring-gray-200 xl:order-none xl:mx-0">
                                                     @endif
                                                 </div>
-
-                                                <button class="col-span-5 rounded-lg bg-blue-700 px-4 py-3 text-sm font-black text-white hover:bg-blue-800 xl:col-span-1">Guardar</button>
-                                            </form>
+                                            </div>
                                         @else
                                             <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                                                 <div class="flex items-center gap-3">
@@ -225,6 +238,18 @@
                             <p class="mt-1 text-sm text-gray-500">Cambia el grupo o el estado para ver el calendario.</p>
                         </div>
                     @endforelse
+
+                    @if ($canEditPredictions)
+                            <div class="wc-card sticky bottom-4 z-10 flex flex-col gap-3 rounded-xl p-4 sm:flex-row sm:items-center sm:justify-end">
+                                <button name="save_mode" value="partial" class="rounded-lg border border-blue-200 px-5 py-3 text-sm font-black text-blue-700 hover:bg-blue-50">
+                                    Guardar parcial
+                                </button>
+                                <button name="save_mode" value="final" class="rounded-lg bg-blue-700 px-5 py-3 text-sm font-black text-white hover:bg-blue-800">
+                                    Guardar todo y bloquear
+                                </button>
+                            </div>
+                        </form>
+                    @endif
                 </main>
 
                 <aside class="space-y-6">

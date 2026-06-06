@@ -22,6 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/verificar-celular', [PhoneVerificationController::class, 'store'])->middleware('throttle:5,1')->name('phone.verify.store');
     Route::post('/verificar-celular/reenviar', [PhoneVerificationController::class, 'resend'])->middleware('throttle:3,1')->name('phone.verify.resend');
     Route::post('/torneos/{tournament}/inscripcion', [TournamentRegistrationController::class, 'store'])->name('tournaments.register');
+    Route::post('/torneos/{tournament}/pronosticos', [PredictionController::class, 'bulkStore'])->name('predictions.bulk-store');
     Route::post('/partidos/{match}/pronostico', [PredictionController::class, 'store'])->name('predictions.store');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

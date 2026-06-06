@@ -19,13 +19,18 @@ class TournamentParticipant extends Model
         'payment_status',
         'paid_at',
         'approved_at',
+        'predictions_finalized_at',
         'approved_by',
         'notes',
     ];
 
     protected function casts(): array
     {
-        return ['paid_at' => 'datetime', 'approved_at' => 'datetime'];
+        return [
+            'paid_at' => 'datetime',
+            'approved_at' => 'datetime',
+            'predictions_finalized_at' => 'datetime',
+        ];
     }
 
     public function tournament(): BelongsTo
@@ -46,5 +51,10 @@ class TournamentParticipant extends Model
     public function isApproved(): bool
     {
         return $this->status === 'approved';
+    }
+
+    public function hasFinalizedPredictions(): bool
+    {
+        return $this->predictions_finalized_at !== null;
     }
 }

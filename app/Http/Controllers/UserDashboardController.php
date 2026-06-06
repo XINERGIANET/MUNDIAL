@@ -23,6 +23,7 @@ class UserDashboardController extends Controller
         $approvedTournamentIds = $participants->where('status', 'approved')->pluck('tournament_id');
         $selectedTournamentId = $request->integer('torneo') ?: $approvedTournamentIds->first();
         $selectedTournament = $selectedTournamentId ? Tournament::find($selectedTournamentId) : null;
+        $selectedParticipant = $selectedTournamentId ? $participants->firstWhere('tournament_id', $selectedTournamentId) : null;
         $selectedGroupId = $request->integer('grupo') ?: null;
         $selectedStatus = $request->string('estado', 'abiertos')->toString();
 
@@ -63,6 +64,7 @@ class UserDashboardController extends Controller
             'participants' => $participants,
             'approvedTournaments' => Tournament::query()->whereIn('id', $approvedTournamentIds)->orderBy('starts_at')->get(),
             'selectedTournament' => $selectedTournament,
+            'selectedParticipant' => $selectedParticipant,
             'selectedGroupId' => $selectedGroupId,
             'selectedStatus' => $selectedStatus,
             'tournamentGroups' => $selectedTournament

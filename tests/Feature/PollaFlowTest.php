@@ -80,6 +80,96 @@ class PollaFlowTest extends TestCase
         ]);
     }
 
+    public function test_approved_participant_can_save_predictions_partially(): void
+    {
+        [$user, $tournament, $match] = $this->approvedSetup();
+
+        $this->actingAs($user)->post(route('predictions.bulk-store', $tournament), [
+            'save_mode' => 'partial',
+            'predictions' => [
+                $match->id => [
+                    'predicted_home_score' => 2,
+                    'predicted_away_score' => 1,
+                ],
+            ],
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('predictions', [
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+            'predicted_home_score' => 2,
+            'predicted_away_score' => 1,
+        ]);
+        $this->assertNull(TournamentParticipant::where('user_id', $user->id)->where('tournament_id', $tournament->id)->first()->predictions_finalized_at);
+    }
+
+    public function test_final_predictions_require_all_open_matches(): void
+    {
+        [$user, $tournament, $match] = $this->approvedSetup();
+        $secondMatch = $this->createMatch($tournament);
+
+        $this->actingAs($user)->post(route('predictions.bulk-store', $tournament), [
+            'save_mode' => 'final',
+            'predictions' => [
+                $match->id => [
+                    'predicted_home_score' => 2,
+                    'predicted_away_score' => 1,
+                ],
+            ],
+        ])->assertSessionHasErrors('predictions');
+
+        $this->assertDatabaseMissing('tournament_participants', [
+            'user_id' => $user->id,
+            'tournament_id' => $tournament->id,
+            'predictions_finalized_at' => now(),
+        ]);
+        $this->assertNull(TournamentParticipant::where('user_id', $user->id)->where('tournament_id', $tournament->id)->first()->predictions_finalized_at);
+    }
+
+    public function test_final_predictions_lock_future_edits(): void
+    {
+        [$user, $tournament, $match] = $this->approvedSetup();
+        $secondMatch = $this->createMatch($tournament);
+
+        $this->actingAs($user)->post(route('predictions.bulk-store', $tournament), [
+            'save_mode' => 'final',
+            'predictions' => [
+                $match->id => [
+                    'predicted_home_score' => 2,
+                    'predicted_away_score' => 1,
+                ],
+                $secondMatch->id => [
+                    'predicted_home_score' => 0,
+                    'predicted_away_score' => 0,
+                ],
+            ],
+        ])->assertRedirect();
+
+        $this->assertNotNull(TournamentParticipant::where('user_id', $user->id)->where('tournament_id', $tournament->id)->first()->predictions_finalized_at);
+
+        $this->actingAs($user)->post(route('predictions.bulk-store', $tournament), [
+            'save_mode' => 'partial',
+            'predictions' => [
+                $match->id => [
+                    'predicted_home_score' => 4,
+                    'predicted_away_score' => 1,
+                ],
+            ],
+        ])->assertForbidden();
+
+        $this->actingAs($user)->post(route('predictions.store', $match), [
+            'predicted_home_score' => 4,
+            'predicted_away_score' => 1,
+        ])->assertForbidden();
+
+        $this->assertDatabaseHas('predictions', [
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+            'predicted_home_score' => 2,
+            'predicted_away_score' => 1,
+        ]);
+    }
+
     public function test_prediction_is_blocked_after_closing_time(): void
     {
         [$user, $tournament, $match] = $this->approvedSetup();
@@ -182,5 +272,25 @@ class PollaFlowTest extends TestCase
         ]);
 
         return [$user, $tournament, $match];
+    }
+
+    private function createMatch(Tournament $tournament): FootballMatch
+    {
+        $phase = TournamentPhase::firstOrCreate(
+            ['tournament_id' => $tournament->id, 'name' => 'Fase'],
+            ['type' => 'group_stage', 'order' => 1]
+        );
+        $home = Team::create(['name' => 'Home '.uniqid(), 'slug' => 'home-'.uniqid()]);
+        $away = Team::create(['name' => 'Away '.uniqid(), 'slug' => 'away-'.uniqid()]);
+
+        return FootballMatch::create([
+            'tournament_id' => $tournament->id,
+            'phase_id' => $phase->id,
+            'home_team_id' => $home->id,
+            'away_team_id' => $away->id,
+            'starts_at' => now()->addDays(2),
+            'prediction_closes_at' => now()->addHours(30),
+            'status' => 'scheduled',
+        ]);
     }
 }
