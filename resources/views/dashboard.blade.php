@@ -112,12 +112,12 @@
 
                     @forelse ($tournamentMatches->groupBy(fn ($match) => $match->group?->name ?? $match->phase?->name ?? 'Sin grupo') as $groupName => $matches)
                         <section class="wc-card overflow-hidden rounded-xl">
-                            <div class="flex items-center justify-between gap-3 border-b border-gray-100 bg-gray-50 px-4 py-3 sm:px-5 sm:py-4">
+                            <div class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-5 py-4">
                                 <div>
-                                    <h3 class="text-base font-black text-gray-950 sm:text-lg">{{ $groupName }}</h3>
-                                    <p class="text-xs text-gray-500 sm:text-sm">{{ $matches->count() }} partidos</p>
+                                    <h3 class="text-lg font-black text-gray-950">{{ $groupName }}</h3>
+                                    <p class="text-sm text-gray-500">{{ $matches->count() }} partidos</p>
                                 </div>
-                                <span class="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black text-blue-700 ring-1 ring-blue-200 sm:text-xs">Mundial 2026</span>
+                                <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700 ring-1 ring-blue-200">Mundial 2026</span>
                             </div>
 
                             <div class="divide-y divide-gray-100">
@@ -131,29 +131,27 @@
                                         $isFinished = $match->status === 'finished';
                                     @endphp
 
-                                    <article class="p-4 sm:p-5">
-                                        <div class="mb-3 flex items-start justify-between gap-3">
-                                            <div>
-                                                <p class="text-sm font-black text-gray-950">{{ $match->starts_at->format('d/m/Y') }}</p>
-                                                <p class="text-xs text-gray-500 sm:text-sm">{{ $match->starts_at->format('H:i') }} · cierra {{ $match->prediction_closes_at->format('H:i') }}</p>
-                                            </div>
-                                            <span class="shrink-0 rounded-full px-3 py-1 text-[11px] font-black ring-1 sm:text-xs {{ $isFinished ? 'bg-green-50 text-green-700 ring-green-200' : ($isOpen ? 'bg-blue-50 text-blue-700 ring-blue-200' : 'bg-gray-50 text-gray-600 ring-gray-200') }}">
+                                    <article class="grid gap-4 p-5 xl:grid-cols-[220px_1fr_260px] xl:items-center">
+                                        <div>
+                                            <p class="text-sm font-black text-gray-950">{{ $match->starts_at->format('d/m/Y') }}</p>
+                                            <p class="text-sm text-gray-500">{{ $match->starts_at->format('H:i') }} · cierra {{ $match->prediction_closes_at->format('H:i') }}</p>
+                                            <span class="mt-2 inline-flex rounded-full px-3 py-1 text-xs font-black ring-1 {{ $isFinished ? 'bg-green-50 text-green-700 ring-green-200' : ($isOpen ? 'bg-blue-50 text-blue-700 ring-blue-200' : 'bg-gray-50 text-gray-600 ring-gray-200') }}">
                                                 {{ $isOpen ? 'Abierto' : ($statusLabels[$match->status] ?? $match->status) }}
                                             </span>
                                         </div>
 
-                                        <div class="grid grid-cols-[1fr_42px_1fr] items-start gap-2 sm:grid-cols-[1fr_64px_1fr] sm:gap-4">
-                                            <div class="min-w-0 text-center">
+                                        <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                                            <div class="flex items-center gap-3">
                                                 @if ($homeTeam?->logo_path)
-                                                    <img src="{{ $homeTeam->logo_path }}" alt="{{ $homeTeam->name }}" class="mx-auto h-9 w-12 rounded object-cover ring-1 ring-gray-200 sm:h-11 sm:w-16">
+                                                    <img src="{{ $homeTeam->logo_path }}" alt="{{ $homeTeam->name }}" class="h-10 w-14 rounded object-cover ring-1 ring-gray-200">
                                                 @endif
                                                 <div>
-                                                    <p class="mt-2 truncate text-sm font-black text-gray-950 sm:text-base">{{ $homeTeam?->name ?? 'Equipo por definir' }}</p>
-                                                    <p class="text-[11px] font-medium text-gray-500 sm:text-xs">Local</p>
+                                                    <p class="font-black text-gray-950">{{ $homeTeam?->name ?? 'Equipo por definir' }}</p>
+                                                    <p class="text-xs text-gray-500">Local</p>
                                                 </div>
                                             </div>
 
-                                            <div class="mt-7 grid h-9 place-items-center rounded-lg bg-gray-100 px-2 text-xs font-black text-gray-500 sm:mt-8 sm:h-10 sm:text-sm">
+                                            <div class="rounded-lg bg-gray-100 px-3 py-2 text-sm font-black text-gray-500">
                                                 @if ($isFinished)
                                                     {{ $match->home_score }} - {{ $match->away_score }}
                                                 @else
@@ -161,25 +159,25 @@
                                                 @endif
                                             </div>
 
-                                            <div class="min-w-0 text-center">
-                                                @if ($awayTeam?->logo_path)
-                                                    <img src="{{ $awayTeam->logo_path }}" alt="{{ $awayTeam->name }}" class="mx-auto h-9 w-12 rounded object-cover ring-1 ring-gray-200 sm:h-11 sm:w-16">
-                                                @endif
+                                            <div class="flex items-center justify-end gap-3 text-right">
                                                 <div>
-                                                    <p class="mt-2 truncate text-sm font-black text-gray-950 sm:text-base">{{ $awayTeam?->name ?? 'Equipo por definir' }}</p>
-                                                    <p class="text-[11px] font-medium text-gray-500 sm:text-xs">Visitante</p>
+                                                    <p class="font-black text-gray-950">{{ $awayTeam?->name ?? 'Equipo por definir' }}</p>
+                                                    <p class="text-xs text-gray-500">Visitante</p>
                                                 </div>
+                                                @if ($awayTeam?->logo_path)
+                                                    <img src="{{ $awayTeam->logo_path }}" alt="{{ $awayTeam->name }}" class="h-10 w-14 rounded object-cover ring-1 ring-gray-200">
+                                                @endif
                                             </div>
                                         </div>
 
-                                        <div class="mt-4">
+                                        <div>
                                             @if ($isOpen)
-                                                <form method="POST" action="{{ route('predictions.store', $match) }}" class="grid grid-cols-[64px_auto_64px_minmax(96px,1fr)] items-center gap-2 sm:grid-cols-[72px_auto_72px_1fr]">
+                                                <form method="POST" action="{{ route('predictions.store', $match) }}" class="flex items-center gap-2">
                                                     @csrf
-                                                    <input name="predicted_home_score" type="number" min="0" max="30" value="{{ old('predicted_home_score', $prediction?->predicted_home_score) }}" class="h-11 w-full rounded-lg border-gray-300 text-center text-lg font-black sm:h-12" required>
-                                                    <span class="grid h-11 place-items-center px-1 font-black text-gray-400 sm:h-12">-</span>
-                                                    <input name="predicted_away_score" type="number" min="0" max="30" value="{{ old('predicted_away_score', $prediction?->predicted_away_score) }}" class="h-11 w-full rounded-lg border-gray-300 text-center text-lg font-black sm:h-12" required>
-                                                    <button class="h-11 rounded-lg bg-blue-700 px-3 text-sm font-black text-white hover:bg-blue-800 sm:h-12 sm:px-4">Guardar</button>
+                                                    <input name="predicted_home_score" type="number" min="0" max="30" value="{{ old('predicted_home_score', $prediction?->predicted_home_score) }}" class="h-12 w-16 rounded-lg border-gray-300 text-center text-xl font-black" required>
+                                                    <span class="font-black text-gray-400">-</span>
+                                                    <input name="predicted_away_score" type="number" min="0" max="30" value="{{ old('predicted_away_score', $prediction?->predicted_away_score) }}" class="h-12 w-16 rounded-lg border-gray-300 text-center text-xl font-black" required>
+                                                    <button class="ml-auto rounded-lg bg-blue-700 px-4 py-3 text-sm font-black text-white hover:bg-blue-800">Guardar</button>
                                                 </form>
                                             @elseif ($prediction)
                                                 <div class="rounded-lg bg-gray-50 p-3 ring-1 ring-gray-200">
