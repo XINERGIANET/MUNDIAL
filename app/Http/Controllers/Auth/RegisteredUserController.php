@@ -10,10 +10,12 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Throwable;
 
 class RegisteredUserController extends Controller
 {
@@ -46,15 +48,25 @@ class RegisteredUserController extends Controller
             throw ValidationException::withMessages(['phone' => 'Este numero de celular ya esta registrado.']);
         }
 
-        $user = User::create([
-            'name' => $data['name'],
-            'phone' => $data['phone'],
-            'phone_normalized' => $phone,
-            'email' => $data['email'] ?? null,
-            'password' => Hash::make($data['password']),
-        ]);
+        try {
+            $user = DB::transaction(function () use ($data, $phone, $otpService, $request) {
+                $user = User::create([
+                    'name' => $data['name'],
+                    'phone' => $data['phone'],
+                    'phone_normalized' => $phone,
+                    'email' => $data['email'] ?? null,
+                    'password' => Hash::make($data['password']),
+                ]);
 
-        $otpService->issue($user, $data['otp_channel'], $request->ip(), $request->userAgent());
+                $otpService->issue($user, $data['otp_channel'], $request->ip(), $request->userAgent());
+
+                return $user;
+            });
+        } catch (Throwable $exception) {
+            throw ValidationException::withMessages([
+                'otp_channel' => $exception->getMessage(),
+            ]);
+        }
 
         event(new Registered($user));
 

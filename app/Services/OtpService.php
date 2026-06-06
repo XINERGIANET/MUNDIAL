@@ -7,6 +7,7 @@ use App\Models\PhoneVerificationCode;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class OtpService
 {
@@ -30,10 +31,16 @@ class OtpService
             'user_agent' => $userAgent,
         ]);
 
-        if (config('polla.otp_queue')) {
-            SendOtpCodeJob::dispatch($user, $code, $channel);
-        } else {
-            SendOtpCodeJob::dispatchSync($user, $code, $channel);
+        try {
+            if (config('polla.otp_queue')) {
+                SendOtpCodeJob::dispatch($user, $code, $channel);
+            } else {
+                SendOtpCodeJob::dispatchSync($user, $code, $channel);
+            }
+        } catch (Throwable $exception) {
+            $verification->delete();
+
+            throw $exception;
         }
 
         return $verification;

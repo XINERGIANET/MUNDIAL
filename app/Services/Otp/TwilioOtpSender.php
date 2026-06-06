@@ -4,6 +4,7 @@ namespace App\Services\Otp;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 class TwilioOtpSender
@@ -48,8 +49,20 @@ class TwilioOtpSender
             ]);
 
         if ($response->failed()) {
-            throw new RuntimeException('Twilio no pudo enviar el codigo: '.$response->body());
+            $code = $response->json('code');
+            $message = $response->json('message') ?: $response->body();
+
+            throw new RuntimeException('Twilio no pudo enviar el codigo'.($code ? " ({$code})" : '').": {$message}");
         }
+
+        Log::info('Twilio OTP message accepted', [
+            'user_id' => $user->id,
+            'to' => $to,
+            'sid' => $response->json('sid'),
+            'status' => $response->json('status'),
+            'error_code' => $response->json('error_code'),
+            'error_message' => $response->json('error_message'),
+        ]);
     }
 
     private function toE164(User $user): string

@@ -6,6 +6,7 @@ use App\Services\OtpService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Throwable;
 
 class PhoneVerificationController extends Controller
 {
@@ -26,10 +27,16 @@ class PhoneVerificationController extends Controller
         return redirect()->route('dashboard')->with('status', 'Celular verificado correctamente.');
     }
 
-    public function resend(Request $request, OtpService $otpService): RedirectResponse
+    public function resend(Request $request, OtpService $otpService): View
     {
-        $otpService->issue($request->user(), config('polla.otp_channel_default'), $request->ip(), $request->userAgent());
+        try {
+            $otpService->issue($request->user(), config('polla.otp_channel_default'), $request->ip(), $request->userAgent());
 
-        return back()->with('status', 'Enviamos un nuevo codigo.');
+            return view('auth.verify-phone', ['status' => 'Enviamos un nuevo codigo.']);
+        } catch (Throwable $exception) {
+            return view('auth.verify-phone', [
+                'sendError' => $exception->getMessage(),
+            ]);
+        }
     }
 }

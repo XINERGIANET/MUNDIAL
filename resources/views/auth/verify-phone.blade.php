@@ -8,8 +8,14 @@
             <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                 <p class="text-sm text-gray-600 mb-4">Ingresa el codigo de 6 digitos enviado a {{ auth()->user()->maskedPhone() }}.</p>
 
-                @if (session('status'))
-                    <div class="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700">{{ session('status') }}</div>
+                @if (session('status') || isset($status))
+                    <div class="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700">{{ session('status') ?? $status }}</div>
+                @endif
+
+                @if (isset($sendError))
+                    <div class="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{{ $sendError }}</div>
+                @elseif ($errors->any())
+                    <div class="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{{ $errors->first() }}</div>
                 @endif
 
                 <form method="POST" action="{{ route('phone.verify.store') }}" class="space-y-4">
