@@ -9,6 +9,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class QuickFootballMatchResults extends Page
 {
@@ -88,7 +89,13 @@ class QuickFootballMatchResults extends Page
                 continue;
             }
 
-            app(MatchResultService::class)->register($match, (int) $homeScore, (int) $awayScore, auth()->user());
+            $admin = Auth::user();
+
+            if (! $admin) {
+                continue;
+            }
+
+            app(MatchResultService::class)->register($match, (int) $homeScore, (int) $awayScore, $admin);
 
             $saved++;
         }

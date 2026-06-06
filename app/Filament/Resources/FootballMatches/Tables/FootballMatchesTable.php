@@ -13,6 +13,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class FootballMatchesTable
 {
@@ -74,7 +75,13 @@ class FootballMatchesTable
                             ->extraInputAttributes(['class' => 'text-center text-2xl font-black']),
                     ])
                     ->action(function ($record, array $data): void {
-                        app(MatchResultService::class)->register($record, (int) $data['home_score'], (int) $data['away_score'], auth()->user());
+                        $admin = Auth::user();
+
+                        if (! $admin) {
+                            return;
+                        }
+
+                        app(MatchResultService::class)->register($record, (int) $data['home_score'], (int) $data['away_score'], $admin);
                     }),
                 EditAction::make(),
             ])
