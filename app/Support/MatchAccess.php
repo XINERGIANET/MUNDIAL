@@ -9,7 +9,11 @@ class MatchAccess
 {
     public static function canParticipantAccess(?TournamentParticipant $participant, FootballMatch $match): bool
     {
-        if (! $participant || $participant->tournament_id !== $match->tournament_id) {
+        if (! $participant) {
+            return $match->is_welcome_courtesy;
+        }
+
+        if ($participant->tournament_id !== $match->tournament_id) {
             return false;
         }
 

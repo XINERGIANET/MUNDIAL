@@ -26,10 +26,13 @@ class UserDashboardController extends Controller
             ->pluck('tournament_id');
         $accessibleParticipants = $participants->filter(fn ($participant) => $participant->isApproved()
             || ($participant->hasCourtesyAccess() && $courtesyTournamentIds->contains($participant->tournament_id)));
-        $accessibleTournamentIds = $accessibleParticipants->pluck('tournament_id');
+        $accessibleTournamentIds = $accessibleParticipants->pluck('tournament_id')
+            ->merge($courtesyTournamentIds)
+            ->unique()
+            ->values();
         $selectedTournamentId = $request->integer('torneo') ?: $accessibleTournamentIds->first();
         $selectedTournament = $selectedTournamentId ? Tournament::find($selectedTournamentId) : null;
-        $selectedParticipant = $selectedTournamentId ? $accessibleParticipants->firstWhere('tournament_id', $selectedTournamentId) : null;
+        $selectedParticipant = $selectedTournamentId ? $participants->firstWhere('tournament_id', $selectedTournamentId) : null;
         $selectedGroupId = $request->integer('grupo') ?: null;
         $selectedStatus = $request->string('estado', 'abiertos')->toString();
 
@@ -50,7 +53,7 @@ class UserDashboardController extends Controller
             $matchesQuery->where('tournament_id', $selectedTournament->id);
         }
 
-        if ($selectedParticipant && ! $selectedParticipant->isApproved()) {
+        if (! $selectedParticipant || ! $selectedParticipant->isApproved()) {
             $matchesQuery->where('is_welcome_courtesy', true);
         }
 

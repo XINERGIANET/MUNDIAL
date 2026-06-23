@@ -45,7 +45,8 @@
         ];
         $predictionsFinalized = $selectedParticipant?->hasFinalizedPredictions() ?? false;
         $hasCourtesyOnlyAccess = $selectedParticipant?->hasCourtesyAccess() ?? false;
-        $canEditPredictions = $selectedTournament && $selectedParticipant && ! $predictionsFinalized && ($selectedParticipant->isApproved() || $hasCourtesyOnlyAccess);
+        $isCourtesyGuest = $selectedTournament && ! $selectedParticipant;
+        $canEditPredictions = $selectedTournament && ! $predictionsFinalized && (($selectedParticipant && ($selectedParticipant->isApproved() || $hasCourtesyOnlyAccess)) || $isCourtesyGuest);
     @endphp
 
     <div class="pb-12">
@@ -117,6 +118,8 @@
                             <h2 class="text-xl font-black text-gray-950">{{ $selectedTournament?->name ?? 'Sin torneos disponibles' }}</h2>
                             @if ($predictionsFinalized)
                                 <p class="mt-1 text-sm font-semibold text-green-700">Pronosticos guardados definitivamente. Ya no se pueden editar.</p>
+                            @elseif ($isCourtesyGuest)
+                                <p class="mt-1 text-sm font-semibold text-amber-700">Estas viendo partidos de cortesia de bienvenida. Puedes pronosticar sin pagar; al guardar quedaras inscrito como pendiente de pago.</p>
                             @elseif ($hasCourtesyOnlyAccess)
                                 <p class="mt-1 text-sm font-semibold text-amber-700">Estas viendo partidos de cortesia de bienvenida. Puedes guardar pronosticos parciales sin haber pagado todavia.</p>
                             @endif
