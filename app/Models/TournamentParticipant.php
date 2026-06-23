@@ -53,6 +53,11 @@ class TournamentParticipant extends Model
         return $this->status === 'approved';
     }
 
+    public function hasCourtesyAccess(): bool
+    {
+        return $this->status === 'pending_payment';
+    }
+
     public function hasFinalizedPredictions(): bool
     {
         return $this->predictions_finalized_at !== null;

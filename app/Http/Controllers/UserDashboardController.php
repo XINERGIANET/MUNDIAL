@@ -20,10 +20,16 @@ class UserDashboardController extends Controller
         }
 
         $participants = $user->participants()->with('tournament')->latest()->get();
-        $approvedTournamentIds = $participants->where('status', 'approved')->pluck('tournament_id');
-        $selectedTournamentId = $request->integer('torneo') ?: $approvedTournamentIds->first();
+        $courtesyTournamentIds = FootballMatch::query()
+            ->where('is_welcome_courtesy', true)
+            ->distinct()
+            ->pluck('tournament_id');
+        $accessibleParticipants = $participants->filter(fn ($participant) => $participant->isApproved()
+            || ($participant->hasCourtesyAccess() && $courtesyTournamentIds->contains($participant->tournament_id)));
+        $accessibleTournamentIds = $accessibleParticipants->pluck('tournament_id');
+        $selectedTournamentId = $request->integer('torneo') ?: $accessibleTournamentIds->first();
         $selectedTournament = $selectedTournamentId ? Tournament::find($selectedTournamentId) : null;
-        $selectedParticipant = $selectedTournamentId ? $participants->firstWhere('tournament_id', $selectedTournamentId) : null;
+        $selectedParticipant = $selectedTournamentId ? $accessibleParticipants->firstWhere('tournament_id', $selectedTournamentId) : null;
         $selectedGroupId = $request->integer('grupo') ?: null;
         $selectedStatus = $request->string('estado', 'abiertos')->toString();
 
@@ -36,12 +42,16 @@ class UserDashboardController extends Controller
                 'awayTeam',
                 'predictions' => fn ($query) => $query->where('user_id', $user->id),
             ])
-            ->whereIn('tournament_id', $approvedTournamentIds)
+            ->whereIn('tournament_id', $accessibleTournamentIds)
             ->whereHas('homeTeam')
             ->whereHas('awayTeam');
 
         if ($selectedTournament) {
             $matchesQuery->where('tournament_id', $selectedTournament->id);
+        }
+
+        if ($selectedParticipant && ! $selectedParticipant->isApproved()) {
+            $matchesQuery->where('is_welcome_courtesy', true);
         }
 
         if ($selectedGroupId) {
@@ -62,7 +72,7 @@ class UserDashboardController extends Controller
         return view('dashboard', [
             'availableTournaments' => Tournament::query()->where('is_active', true)->where('status', 'open')->get(),
             'participants' => $participants,
-            'approvedTournaments' => Tournament::query()->whereIn('id', $approvedTournamentIds)->orderBy('starts_at')->get(),
+            'accessibleTournaments' => Tournament::query()->whereIn('id', $accessibleTournamentIds)->orderBy('starts_at')->get(),
             'selectedTournament' => $selectedTournament,
             'selectedParticipant' => $selectedParticipant,
             'selectedGroupId' => $selectedGroupId,

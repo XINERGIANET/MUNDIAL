@@ -11,6 +11,7 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
@@ -36,6 +37,7 @@ class FootballMatchesTable
                 TextColumn::make('awayTeam.name')->label('Visitante')->searchable(),
                 TextColumn::make('starts_at')->label('Inicio')->dateTime()->sortable(),
                 TextColumn::make('prediction_closes_at')->label('Cierre pronosticos')->dateTime()->sortable(),
+                ToggleColumn::make('is_welcome_courtesy')->label('Cortesia'),
                 TextColumn::make('status')
                     ->label('Estado')
                     ->badge()

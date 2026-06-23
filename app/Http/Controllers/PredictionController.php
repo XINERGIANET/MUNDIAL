@@ -6,6 +6,7 @@ use App\Http\Requests\StorePredictionRequest;
 use App\Models\FootballMatch;
 use App\Models\Prediction;
 use App\Models\Tournament;
+use App\Support\MatchAccess;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -24,10 +25,9 @@ class PredictionController extends Controller
 
         $participant = $user->participants()
             ->where('tournament_id', $match->tournament_id)
-            ->where('status', 'approved')
             ->first();
 
-        abort_unless($participant, 403, 'Tu participacion aun no esta aprobada para este torneo.');
+        abort_unless(MatchAccess::canParticipantAccess($participant, $match), 403, 'Tu participacion aun no tiene acceso a este partido.');
         abort_if($participant->hasFinalizedPredictions(), 403, 'Tus pronosticos finales ya fueron guardados y no se pueden editar.');
 
         Prediction::updateOrCreate(
@@ -51,10 +51,9 @@ class PredictionController extends Controller
 
         $participant = $user->participants()
             ->where('tournament_id', $tournament->id)
-            ->where('status', 'approved')
             ->first();
 
-        abort_unless($participant, 403, 'Tu participacion aun no esta aprobada para este torneo.');
+        abort_unless($participant, 403, 'Aun no estas inscrito en este torneo.');
         abort_if($participant->hasFinalizedPredictions(), 403, 'Tus pronosticos finales ya fueron guardados y no se pueden editar.');
 
         $validated = $request->validate([
@@ -72,9 +71,16 @@ class PredictionController extends Controller
             ->whereHas('awayTeam')
             ->get()
             ->filter(fn (FootballMatch $match) => $match->isPredictionOpen()
+                && MatchAccess::canParticipantAccess($participant, $match)
                 && $match->homeTeam->is_active
                 && $match->awayTeam->is_active)
             ->keyBy('id');
+
+        if ($validated['save_mode'] === 'final' && ! $participant->isApproved()) {
+            throw ValidationException::withMessages([
+                'predictions' => 'La cortesia de bienvenida solo permite guardar pronosticos parciales.',
+            ]);
+        }
 
         $existingPredictions = Prediction::query()
             ->where('tournament_id', $tournament->id)
