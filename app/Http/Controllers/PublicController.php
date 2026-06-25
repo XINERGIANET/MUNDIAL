@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FootballMatch;
 use App\Models\Tournament;
 use App\Services\RankingService;
 use Illuminate\View\View;
@@ -10,13 +11,21 @@ class PublicController extends Controller
 {
     public function home(): View
     {
+        $tournament = Tournament::where('slug', 'mundial-demo-2026')
+            ->where('is_active', true)
+            ->first();
+
+        $matches = $tournament
+            ? FootballMatch::with(['homeTeam', 'awayTeam', 'phase'])
+                ->where('tournament_id', $tournament->id)
+                ->whereHas('phase', fn ($q) => $q->where('name', 'Dieciseisavos de final'))
+                ->orderBy('starts_at')
+                ->get()
+            : collect();
+
         return view('public.home', [
-            'tournaments' => Tournament::query()
-                ->where('is_active', true)
-                ->whereIn('status', ['open', 'running'])
-                ->latest('starts_at')
-                ->take(6)
-                ->get(),
+            'tournament' => $tournament,
+            'matches'    => $matches,
         ]);
     }
 
