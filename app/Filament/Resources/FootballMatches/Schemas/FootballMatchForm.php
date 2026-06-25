@@ -2,11 +2,10 @@
 
 namespace App\Filament\Resources\FootballMatches\Schemas;
 
-use App\Services\AuditService;
-use App\Services\RankingService;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class FootballMatchForm
@@ -28,6 +27,10 @@ class FootballMatchForm
                     'finished' => 'Finalizado',
                     'cancelled' => 'Cancelado',
                 ])->required(),
+                Toggle::make('is_welcome_courtesy')
+                    ->label('Cortesia de bienvenida')
+                    ->helperText('Permite que usuarios pendientes de pago puedan ver y pronosticar este partido.')
+                    ->default(false),
                 TextInput::make('home_score')->label('Goles local')->numeric()->minValue(0)->maxValue(30),
                 TextInput::make('away_score')->label('Goles visitante')->numeric()->minValue(0)->maxValue(30),
             ]);

@@ -24,6 +24,7 @@ class FootballMatch extends Model
         'starts_at',
         'prediction_closes_at',
         'status',
+        'is_welcome_courtesy',
         'home_score',
         'away_score',
         'result_registered_by',
@@ -36,6 +37,7 @@ class FootballMatch extends Model
             'starts_at' => 'datetime',
             'prediction_closes_at' => 'datetime',
             'result_registered_at' => 'datetime',
+            'is_welcome_courtesy' => 'boolean',
         ];
     }
 

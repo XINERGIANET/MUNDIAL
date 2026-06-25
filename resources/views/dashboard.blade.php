@@ -44,7 +44,9 @@
             'waived' => 'Exonerado',
         ];
         $predictionsFinalized = $selectedParticipant?->hasFinalizedPredictions() ?? false;
-        $canEditPredictions = $selectedTournament && $selectedParticipant?->isApproved() && ! $predictionsFinalized;
+        $hasCourtesyOnlyAccess = $selectedParticipant?->hasCourtesyAccess() ?? false;
+        $isCourtesyGuest = $selectedTournament && ! $selectedParticipant;
+        $canEditPredictions = $selectedTournament && ! $predictionsFinalized && (($selectedParticipant && ($selectedParticipant->isApproved() || $hasCourtesyOnlyAccess)) || $isCourtesyGuest);
     @endphp
 
     <div class="pb-12">
@@ -54,7 +56,7 @@
                     <div>
                         <label class="mb-1 block text-xs font-black uppercase tracking-wide text-white/75">Torneo</label>
                         <select name="torneo" class="w-full rounded-lg border-white/20 bg-white text-sm font-semibold text-gray-950">
-                            @foreach ($approvedTournaments as $tournament)
+                            @foreach ($accessibleTournaments as $tournament)
                                 <option value="{{ $tournament->id }}" @selected($selectedTournament?->id === $tournament->id)>{{ $tournament->name }}</option>
                             @endforeach
                         </select>
@@ -113,9 +115,13 @@
                     <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                         <div>
                             <p class="text-sm font-black uppercase tracking-wide text-red-600">Calendario</p>
-                            <h2 class="text-xl font-black text-gray-950">{{ $selectedTournament?->name ?? 'Sin torneo aprobado' }}</h2>
+                            <h2 class="text-xl font-black text-gray-950">{{ $selectedTournament?->name ?? 'Sin torneos disponibles' }}</h2>
                             @if ($predictionsFinalized)
                                 <p class="mt-1 text-sm font-semibold text-green-700">Pronosticos guardados definitivamente. Ya no se pueden editar.</p>
+                            @elseif ($isCourtesyGuest)
+                                <p class="mt-1 text-sm font-semibold text-amber-700">Estas viendo partidos de cortesia de bienvenida. Puedes pronosticar sin pagar; al guardar quedaras inscrito como pendiente de pago.</p>
+                            @elseif ($hasCourtesyOnlyAccess)
+                                <p class="mt-1 text-sm font-semibold text-amber-700">Estas viendo partidos de cortesia de bienvenida. Puedes guardar pronosticos parciales sin haber pagado todavia.</p>
                             @endif
                         </div>
                         <p class="text-sm font-semibold text-gray-500">{{ $tournamentMatches->count() }} partidos encontrados</p>
@@ -144,7 +150,8 @@
                                         $awayTeam = $match->awayTeam;
                                         $hasTeams = $homeTeam && $awayTeam;
                                         $isOpen = $hasTeams && $match->isPredictionOpen() && $homeTeam->is_active && $awayTeam->is_active;
-                                        $isEditable = $isOpen && $canEditPredictions;
+                                        $isCourtesyMatch = (bool) $match->is_welcome_courtesy;
+                                        $isEditable = $isOpen && $canEditPredictions && \App\Support\MatchAccess::canParticipantAccess($selectedParticipant, $match);
                                         $isFinished = $match->status === 'finished';
                                     @endphp
 
@@ -155,6 +162,9 @@
                                             <span class="mt-2 inline-flex rounded-full px-3 py-1 text-xs font-black ring-1 {{ $isFinished ? 'bg-green-50 text-green-700 ring-green-200' : ($isOpen ? 'bg-blue-50 text-blue-700 ring-blue-200' : 'bg-gray-50 text-gray-600 ring-gray-200') }}">
                                                 {{ $isOpen ? 'Abierto' : ($statusLabels[$match->status] ?? $match->status) }}
                                             </span>
+                                            @if ($isCourtesyMatch)
+                                                <span class="mt-2 inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700 ring-1 ring-amber-200">Cortesia</span>
+                                            @endif
                                         </div>
 
                                         @if ($isEditable)
@@ -244,9 +254,11 @@
                                 <button name="save_mode" value="partial" class="rounded-lg border border-blue-200 px-5 py-3 text-sm font-black text-blue-700 hover:bg-blue-50">
                                     Guardar parcial
                                 </button>
-                                <button name="save_mode" value="final" class="rounded-lg bg-blue-700 px-5 py-3 text-sm font-black text-white hover:bg-blue-800">
-                                    Guardar todo y bloquear
-                                </button>
+                                @if ($selectedParticipant?->isApproved())
+                                    <button name="save_mode" value="final" class="rounded-lg bg-blue-700 px-5 py-3 text-sm font-black text-white hover:bg-blue-800">
+                                        Guardar todo y bloquear
+                                    </button>
+                                @endif
                             </div>
                         </form>
                     @endif

@@ -6,6 +6,8 @@ use App\Http\Requests\StorePredictionRequest;
 use App\Models\FootballMatch;
 use App\Models\Prediction;
 use App\Models\Tournament;
+use App\Models\TournamentParticipant;
+use App\Support\MatchAccess;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -24,11 +26,18 @@ class PredictionController extends Controller
 
         $participant = $user->participants()
             ->where('tournament_id', $match->tournament_id)
-            ->where('status', 'approved')
             ->first();
 
-        abort_unless($participant, 403, 'Tu participacion aun no esta aprobada para este torneo.');
-        abort_if($participant->hasFinalizedPredictions(), 403, 'Tus pronosticos finales ya fueron guardados y no se pueden editar.');
+        abort_unless(MatchAccess::canParticipantAccess($participant, $match), 403, 'Tu participacion aun no tiene acceso a este partido.');
+
+        if (! $participant && $match->is_welcome_courtesy) {
+            $participant = TournamentParticipant::firstOrCreate(
+                ['tournament_id' => $match->tournament_id, 'user_id' => $user->id],
+                ['status' => 'pending_payment', 'payment_status' => 'unpaid']
+            );
+        }
+
+        abort_if($participant?->hasFinalizedPredictions(), 403, 'Tus pronosticos finales ya fueron guardados y no se pueden editar.');
 
         Prediction::updateOrCreate(
             ['match_id' => $match->id, 'user_id' => $user->id],
@@ -51,11 +60,7 @@ class PredictionController extends Controller
 
         $participant = $user->participants()
             ->where('tournament_id', $tournament->id)
-            ->where('status', 'approved')
             ->first();
-
-        abort_unless($participant, 403, 'Tu participacion aun no esta aprobada para este torneo.');
-        abort_if($participant->hasFinalizedPredictions(), 403, 'Tus pronosticos finales ya fueron guardados y no se pueden editar.');
 
         $validated = $request->validate([
             'save_mode' => ['required', 'in:partial,final'],
@@ -72,9 +77,27 @@ class PredictionController extends Controller
             ->whereHas('awayTeam')
             ->get()
             ->filter(fn (FootballMatch $match) => $match->isPredictionOpen()
+                && MatchAccess::canParticipantAccess($participant, $match)
                 && $match->homeTeam->is_active
                 && $match->awayTeam->is_active)
             ->keyBy('id');
+
+        abort_if($participant?->hasFinalizedPredictions(), 403, 'Tus pronosticos finales ya fueron guardados y no se pueden editar.');
+
+        abort_if($openMatches->isEmpty(), 403, 'Tu participacion aun no tiene acceso a partidos de este torneo.');
+
+        if (! $participant) {
+            $participant = TournamentParticipant::firstOrCreate(
+                ['tournament_id' => $tournament->id, 'user_id' => $user->id],
+                ['status' => 'pending_payment', 'payment_status' => 'unpaid']
+            );
+        }
+
+        if ($validated['save_mode'] === 'final' && ! $participant->isApproved()) {
+            throw ValidationException::withMessages([
+                'predictions' => 'La cortesia de bienvenida solo permite guardar pronosticos parciales.',
+            ]);
+        }
 
         $existingPredictions = Prediction::query()
             ->where('tournament_id', $tournament->id)

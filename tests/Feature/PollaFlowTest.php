@@ -65,6 +65,84 @@ class PollaFlowTest extends TestCase
         ])->assertForbidden();
     }
 
+    public function test_pending_payment_participant_can_save_courtesy_prediction(): void
+    {
+        [$user, $tournament, $match] = $this->approvedSetup(approved: false);
+        $match->update(['is_welcome_courtesy' => true]);
+
+        $this->actingAs($user)->post(route('predictions.store', $match), [
+            'predicted_home_score' => 1,
+            'predicted_away_score' => 0,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('predictions', [
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+            'predicted_home_score' => 1,
+            'predicted_away_score' => 0,
+        ]);
+    }
+
+    public function test_unregistered_user_can_see_courtesy_tournament_on_dashboard(): void
+    {
+        [$user, $tournament] = $this->userAndTournament();
+        $match = $this->createMatch($tournament);
+        $match->update(['is_welcome_courtesy' => true]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee($tournament->name)
+            ->assertSee('Cortesia');
+    }
+
+    public function test_unregistered_user_can_save_courtesy_prediction(): void
+    {
+        [$user, $tournament] = $this->userAndTournament();
+        $match = $this->createMatch($tournament);
+        $match->update(['is_welcome_courtesy' => true]);
+
+        $this->actingAs($user)->post(route('predictions.store', $match), [
+            'predicted_home_score' => 1,
+            'predicted_away_score' => 0,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('predictions', [
+            'user_id' => $user->id,
+            'match_id' => $match->id,
+        ]);
+
+        $this->assertDatabaseHas('tournament_participants', [
+            'user_id' => $user->id,
+            'tournament_id' => $tournament->id,
+            'status' => 'pending_payment',
+            'payment_status' => 'unpaid',
+        ]);
+    }
+
+    public function test_pending_payment_participant_cannot_finalize_courtesy_predictions(): void
+    {
+        [$user, $tournament, $match] = $this->approvedSetup(approved: false);
+        $match->update(['is_welcome_courtesy' => true]);
+
+        $this->actingAs($user)->post(route('predictions.bulk-store', $tournament), [
+            'save_mode' => 'final',
+            'predictions' => [
+                $match->id => [
+                    'predicted_home_score' => 1,
+                    'predicted_away_score' => 0,
+                ],
+            ],
+        ])->assertSessionHasErrors('predictions');
+
+        $this->assertNull(
+            TournamentParticipant::where('user_id', $user->id)
+                ->where('tournament_id', $tournament->id)
+                ->first()
+                ->predictions_finalized_at
+        );
+    }
+
     public function test_approved_participant_can_save_prediction(): void
     {
         [$user, $tournament, $match] = $this->approvedSetup();
