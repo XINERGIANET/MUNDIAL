@@ -325,17 +325,17 @@
 
                                             {{-- Feeder match (home side) --}}
                                             @if ($homeSrc)
-                                                <div class="hidden shrink-0 sm:block">
+                                                <div class="hidden w-56 shrink-0 sm:block">
                                                     <div class="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-3">
                                                         <p class="mb-2 text-center text-[9px] font-black uppercase tracking-widest text-gray-300">Posibles</p>
-                                                        <div class="flex items-center gap-3">
+                                                        <div class="flex flex-col items-center gap-1.5">
                                                             <div class="flex items-center gap-2">
                                                                 @if ($homeSrc->homeTeam?->logo_path)
                                                                     <img src="{{ $homeSrc->homeTeam->logo_path }}" alt="" class="h-6 w-9 shrink-0 rounded object-cover">
                                                                 @endif
                                                                 <span class="text-sm font-black leading-tight text-gray-800">{{ $homeSrc->homeTeam?->name ?? '?' }}</span>
                                                             </div>
-                                                            <span class="shrink-0 text-xs font-bold text-gray-300">vs</span>
+                                                            <span class="text-xs font-bold text-gray-300">vs</span>
                                                             <div class="flex items-center gap-2">
                                                                 @if ($homeSrc->awayTeam?->logo_path)
                                                                     <img src="{{ $homeSrc->awayTeam->logo_path }}" alt="" class="h-6 w-9 shrink-0 rounded object-cover">
@@ -408,17 +408,17 @@
 
                                             {{-- Feeder match (away side) --}}
                                             @if ($awaySrc)
-                                                <div class="hidden shrink-0 sm:block">
+                                                <div class="hidden w-56 shrink-0 sm:block">
                                                     <div class="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-3">
                                                         <p class="mb-2 text-center text-[9px] font-black uppercase tracking-widest text-gray-300">Posibles</p>
-                                                        <div class="flex items-center gap-3">
+                                                        <div class="flex flex-col items-center gap-1.5">
                                                             <div class="flex items-center gap-2">
                                                                 @if ($awaySrc->homeTeam?->logo_path)
                                                                     <img src="{{ $awaySrc->homeTeam->logo_path }}" alt="" class="h-6 w-9 shrink-0 rounded object-cover">
                                                                 @endif
                                                                 <span class="text-sm font-black leading-tight text-gray-800">{{ $awaySrc->homeTeam?->name ?? '?' }}</span>
                                                             </div>
-                                                            <span class="shrink-0 text-xs font-bold text-gray-300">vs</span>
+                                                            <span class="text-xs font-bold text-gray-300">vs</span>
                                                             <div class="flex items-center gap-2">
                                                                 @if ($awaySrc->awayTeam?->logo_path)
                                                                     <img src="{{ $awaySrc->awayTeam->logo_path }}" alt="" class="h-6 w-9 shrink-0 rounded object-cover">
