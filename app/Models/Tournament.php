@@ -23,6 +23,8 @@ class Tournament extends Model
         'entry_fee',
         'currency',
         'payment_whatsapp_number',
+        'payment_yape_number',
+        'payment_qr_path',
         'payment_message',
         'rules',
         'exact_score_points',

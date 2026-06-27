@@ -8,6 +8,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\Action;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -43,6 +44,12 @@ class TournamentParticipantsTable
                 TextColumn::make('user.phone')->label('Celular')->searchable(),
                 TextColumn::make('status')->label('Estado')->badge()->formatStateUsing(fn (?string $state): string => self::statusLabel($state)),
                 TextColumn::make('payment_status')->label('Pago')->badge()->formatStateUsing(fn (?string $state): string => self::paymentLabel($state)),
+                ImageColumn::make('payment_proof_path')
+                    ->label('Comprobante')
+                    ->size(48)
+                    ->getStateUsing(fn ($record) => $record->payment_proof_path
+                        ? route('participants.proof', $record)
+                        : null),
                 TextColumn::make('approved_at')->label('Aprobado')->dateTime(),
             ])
             ->filters([

@@ -18,41 +18,32 @@
             'paid'           => 'Pagado',
             'waived'         => 'Exonerado',
         ];
-        $predictionsFinalized = $selectedParticipant?->hasFinalizedPredictions() ?? false;
-        $hasCourtesyOnlyAccess = $selectedParticipant?->hasCourtesyAccess() ?? false;
-        $isCourtesyGuest = $selectedTournament && ! $selectedParticipant;
-        $canEditPredictions = $selectedTournament && ! $predictionsFinalized && (($selectedParticipant && ($selectedParticipant->isApproved() || $hasCourtesyOnlyAccess)) || $isCourtesyGuest);
+        $predictionsFinalized  = $selectedParticipant?->hasFinalizedPredictions() ?? false;
+        $isApproved            = $selectedParticipant?->isApproved() ?? false;
+        $hasPendingParticipant = $selectedTournament
+            && $selectedParticipant
+            && ! $isApproved;
+        $hasNoParticipant      = $selectedTournament && ! $selectedParticipant;
     @endphp
 
     {{-- Filter bar --}}
     <div class="wc-shell">
         <div class="w-full px-4 py-5 sm:px-6 lg:px-8">
             <form method="GET" action="{{ route('dashboard') }}"
-                  class="grid gap-3 rounded-xl bg-white/10 p-4 ring-1 ring-white/20 backdrop-blur md:grid-cols-4">
+                  class="grid gap-3 rounded-xl bg-white/10 p-4 ring-1 ring-white/20 backdrop-blur md:grid-cols-3">
                 <div>
                     <label class="mb-1 block text-xs font-black uppercase tracking-wide text-white/70">Torneo</label>
                     <select name="torneo" class="w-full rounded-lg border-white/20 bg-white text-sm font-semibold text-gray-950">
-                        @foreach ($accessibleTournaments as $tournament)
+                        @foreach ($availableTournaments as $tournament)
                             <option value="{{ $tournament->id }}" @selected($selectedTournament?->id === $tournament->id)>{{ $tournament->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="mb-1 block text-xs font-black uppercase tracking-wide text-white/70">Grupo</label>
-                    <select name="grupo" class="w-full rounded-lg border-white/20 bg-white text-sm font-semibold text-gray-950">
-                        <option value="">Todos los grupos</option>
-                        @foreach ($tournamentGroups as $group)
-                            <option value="{{ $group->id }}" @selected($selectedGroupId === $group->id)>{{ $group->name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
                     <label class="mb-1 block text-xs font-black uppercase tracking-wide text-white/70">Estado</label>
                     <select name="estado" class="w-full rounded-lg border-white/20 bg-white text-sm font-semibold text-gray-950">
-                        <option value="abiertos"   @selected($selectedStatus === 'abiertos')>Abiertos para pronosticar</option>
-                        <option value="cerrados"   @selected($selectedStatus === 'cerrados')>Cerrados</option>
-                        <option value="resultados" @selected($selectedStatus === 'resultados')>Con resultado</option>
-                        <option value="todos"      @selected($selectedStatus === 'todos')>Todos</option>
+                        <option value="abiertos" @selected($selectedStatus === 'abiertos')>Abiertos</option>
+                        <option value="cerrados" @selected($selectedStatus === 'cerrados')>Cerrados</option>
                     </select>
                 </div>
                 <div class="flex items-end">
@@ -92,25 +83,36 @@
 
             {{-- ── Main calendar ── --}}
             <main class="min-w-0 space-y-8">
+
+                {{-- Jugada tabs (solo si hay más de una) --}}
+                @if ($tournamentParticipants->count() > 1)
+                    <div class="flex gap-2 rounded-xl border border-gray-100 bg-gray-50 p-1.5">
+                        @foreach ($tournamentParticipants as $i => $jugada)
+                            <a href="{{ route('dashboard', array_filter(['torneo' => $selectedTournament?->id, 'jugada' => $jugada->id, 'estado' => $selectedStatus])) }}"
+                               class="flex-1 rounded-lg px-4 py-2.5 text-center text-sm font-black transition
+                                   {{ $selectedParticipant?->id === $jugada->id
+                                       ? 'bg-white text-gray-950 shadow-sm ring-1 ring-gray-200'
+                                       : 'text-gray-500 hover:text-gray-800' }}">
+                                {{ $jugada->entry_name ?? ('Jugada ' . ($i + 1)) }}
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
+
                 <div class="flex items-end justify-between">
                     <div>
                         <p class="text-xs font-black uppercase tracking-wide text-red-600">Calendario</p>
                         <h2 class="text-xl font-black text-gray-950">{{ $selectedTournament?->name ?? 'Sin torneos disponibles' }}</h2>
                         @if ($predictionsFinalized)
                             <p class="mt-1 text-sm font-semibold text-green-700">Pronósticos guardados definitivamente. Ya no se pueden editar.</p>
-                        @elseif ($isCourtesyGuest)
-                            <p class="mt-1 text-sm font-semibold text-amber-700">Estás viendo partidos de cortesía. Puedes pronosticar; al guardar quedarás inscrito como pendiente de pago.</p>
-                        @elseif ($hasCourtesyOnlyAccess)
-                            <p class="mt-1 text-sm font-semibold text-amber-700">Acceso de cortesía. Puedes guardar pronósticos parciales sin haber pagado.</p>
+                        @elseif ($hasNoParticipant)
+                            <p class="mt-1 text-sm font-semibold text-gray-500">Inscríbete en este torneo para poder guardar tus pronósticos.</p>
+                        @elseif ($hasPendingParticipant)
+                            <p class="mt-1 text-sm font-semibold text-amber-700">Tu inscripción está siendo verificada. Podrás guardar pronósticos una vez aprobado.</p>
                         @endif
                     </div>
                     <p class="text-sm text-gray-400">{{ $tournamentMatches->count() }} partidos</p>
                 </div>
-
-                @if ($canEditPredictions)
-                    <form method="POST" action="{{ route('predictions.bulk-store', $selectedTournament) }}" class="space-y-8">
-                        @csrf
-                @endif
 
                 @forelse ($tournamentMatches->groupBy(fn ($m) => $m->group?->name ?? $m->phase?->name ?? 'Sin fase') as $phaseName => $phaseMatches)
                     <div class="space-y-3">
@@ -134,16 +136,22 @@
                             <div class="wc-card overflow-hidden rounded-2xl divide-y divide-gray-100">
                                 @foreach ($dateMatches as $match)
                                     @php
-                                        $prediction  = $match->predictions->first();
-                                        $homeTeam    = $match->homeTeam;
-                                        $awayTeam    = $match->awayTeam;
-                                        $hasTeams    = $homeTeam && $awayTeam;
-                                        $isOpen      = $hasTeams && $match->isPredictionOpen() && $homeTeam->is_active && $awayTeam->is_active;
-                                        $isCourtesyMatch = (bool) $match->is_welcome_courtesy;
-                                        $isEditable  = $isOpen && $canEditPredictions && \App\Support\MatchAccess::canParticipantAccess($selectedParticipant, $match);
-                                        $isFinished  = $match->status === 'finished';
-                                        $isLive      = $match->status === 'live';
+                                        $prediction      = $match->predictions->first();
+                                        $isSaved         = $prediction !== null;
+                                        $homeTeam        = $match->homeTeam;
+                                        $awayTeam        = $match->awayTeam;
+                                        $hasTeams        = $homeTeam && $awayTeam;
+                                        $isOpen          = $hasTeams && $match->isPredictionOpen() && $homeTeam->is_active && $awayTeam->is_active;
+                                        $canSave = $isOpen && ! $isSaved && $isApproved;
+                                        $isFinished      = $match->status === 'finished';
+                                        $isLive          = $match->status === 'live';
                                     @endphp
+
+                                    @if ($canSave)
+                                        <form method="POST" action="{{ route('predictions.store', $match) }}">
+                                            @csrf
+                                            <input type="hidden" name="participant_id" value="{{ $selectedParticipant?->id }}">
+                                    @endif
 
                                     <article class="p-5 sm:p-6">
 
@@ -155,13 +163,12 @@
                                                 <span class="text-xs text-gray-400">cierra {{ $match->prediction_closes_at->format('H:i') }}</span>
                                             </div>
                                             <div class="flex items-center gap-2">
-                                                @if ($isCourtesyMatch)
-                                                    <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700 ring-1 ring-amber-200">Cortesía</span>
-                                                @endif
                                                 @if ($isLive)
                                                     <span class="rounded-full bg-red-600 px-3 py-1 text-xs font-black text-white animate-pulse">En vivo</span>
                                                 @elseif ($isFinished)
                                                     <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-black text-gray-600 ring-1 ring-gray-200">Finalizado</span>
+                                                @elseif ($isSaved)
+                                                    <span class="rounded-full bg-green-50 px-3 py-1 text-xs font-black text-green-700 ring-1 ring-green-200">Cerrado</span>
                                                 @elseif ($isOpen)
                                                     <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700 ring-1 ring-blue-200">Abierto</span>
                                                 @else
@@ -187,17 +194,24 @@
                                                 </div>
                                             </div>
 
-                                            {{-- Center: inputs / result / VS --}}
+                                            {{-- Center: inputs / saved / result / VS --}}
                                             <div class="flex flex-shrink-0 items-center gap-2">
-                                                @if ($isEditable)
-                                                    <input name="predictions[{{ $match->id }}][predicted_home_score]"
+                                                @if ($isSaved)
+                                                    <div class="rounded-xl bg-green-50 px-5 py-3 text-center ring-1 ring-green-200">
+                                                        <p class="text-xl font-black text-green-800 tracking-widest">{{ $prediction->predicted_home_score }} – {{ $prediction->predicted_away_score }}</p>
+                                                        <p class="mt-0.5 text-[10px] font-bold uppercase text-green-600">Mi pronóstico</p>
+                                                    </div>
+                                                @elseif ($canSave)
+                                                    <input name="predicted_home_score"
                                                            type="number" min="0" max="30"
-                                                           value="{{ old('predictions.'.$match->id.'.predicted_home_score', $prediction?->predicted_home_score) }}"
+                                                           value="{{ old('predicted_home_score') }}"
+                                                           placeholder="0"
                                                            class="h-14 w-14 rounded-xl border-gray-200 bg-white text-center text-2xl font-black text-gray-950 shadow-sm focus:border-blue-400 focus:ring-blue-200">
                                                     <span class="text-xl font-black text-gray-300">:</span>
-                                                    <input name="predictions[{{ $match->id }}][predicted_away_score]"
+                                                    <input name="predicted_away_score"
                                                            type="number" min="0" max="30"
-                                                           value="{{ old('predictions.'.$match->id.'.predicted_away_score', $prediction?->predicted_away_score) }}"
+                                                           value="{{ old('predicted_away_score') }}"
+                                                           placeholder="0"
                                                            class="h-14 w-14 rounded-xl border-gray-200 bg-white text-center text-2xl font-black text-gray-950 shadow-sm focus:border-blue-400 focus:ring-blue-200">
                                                 @elseif ($isFinished || $isLive)
                                                     <div class="rounded-xl bg-gray-950 px-5 py-3 text-center">
@@ -227,28 +241,32 @@
 
                                         </div>{{-- /teams --}}
 
-                                        {{-- Prediction row (only when not editable) --}}
-                                        @if (! $isEditable)
-                                            <div class="mt-5 border-t border-gray-100 pt-4">
-                                                @if ($prediction)
-                                                    <div class="flex items-center justify-between">
-                                                        <div class="flex items-center gap-3">
-                                                            <p class="text-xs font-bold uppercase tracking-wide text-gray-400">Mi pronóstico</p>
-                                                            <p class="text-base font-black text-gray-950">{{ $prediction->predicted_home_score }} – {{ $prediction->predicted_away_score }}</p>
-                                                        </div>
-                                                        @if ($prediction->points_awarded !== null)
-                                                            <span class="rounded-full bg-blue-50 px-3 py-1 text-sm font-black text-blue-700 ring-1 ring-blue-200">
-                                                                {{ $prediction->points_awarded }} pts
-                                                            </span>
-                                                        @endif
-                                                    </div>
-                                                @else
-                                                    <p class="text-xs font-semibold text-gray-400">Sin pronóstico registrado</p>
-                                                @endif
-                                            </div>
-                                        @endif
+                                        {{-- Save button / points row --}}
+                                        <div class="mt-5 border-t border-gray-100 pt-4">
+                                            @if ($canSave)
+                                                <div class="flex justify-end">
+                                                    <button type="submit"
+                                                            class="rounded-xl bg-blue-700 px-6 py-2.5 text-sm font-black text-white hover:bg-blue-800">
+                                                        Guardar pronóstico
+                                                    </button>
+                                                </div>
+                                            @elseif ($isSaved && $prediction->points_awarded > 0)
+                                                <div class="flex items-center justify-between">
+                                                    <p class="text-xs font-bold uppercase tracking-wide text-gray-400">Puntos</p>
+                                                    <span class="rounded-full bg-blue-50 px-3 py-1 text-sm font-black text-blue-700 ring-1 ring-blue-200">
+                                                        {{ $prediction->points_awarded }} pts
+                                                    </span>
+                                                </div>
+                                            @elseif (! $isSaved && ! $isOpen)
+                                                <p class="text-xs font-semibold text-gray-400">Sin pronóstico registrado</p>
+                                            @endif
+                                        </div>
 
                                     </article>
+
+                                    @if ($canSave)
+                                        </form>
+                                    @endif
                                 @endforeach
                             </div>{{-- /day card --}}
 
@@ -259,25 +277,10 @@
                 @empty
                     <div class="wc-card rounded-2xl p-12 text-center">
                         <p class="text-lg font-black text-gray-950">No hay partidos con estos filtros.</p>
-                        <p class="mt-2 text-sm text-gray-400">Cambia el grupo o el estado para ver el calendario.</p>
+                        <p class="mt-2 text-sm text-gray-400">Cambia el estado o el torneo para ver el calendario.</p>
                     </div>
                 @endforelse
 
-                @if ($canEditPredictions)
-                        <div class="wc-card sticky bottom-4 z-10 flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-end">
-                            <button name="save_mode" value="partial"
-                                    class="rounded-xl border border-blue-200 px-6 py-3 text-sm font-black text-blue-700 hover:bg-blue-50">
-                                Guardar borrador
-                            </button>
-                            @if ($selectedParticipant?->isApproved())
-                                <button name="save_mode" value="final"
-                                        class="rounded-xl bg-blue-700 px-6 py-3 text-sm font-black text-white hover:bg-blue-800">
-                                    Guardar y bloquear pronósticos
-                                </button>
-                            @endif
-                        </div>
-                    </form>
-                @endif
             </main>
 
             {{-- ── Sidebar ── --}}
@@ -310,20 +313,15 @@
                             <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
                                 <div class="flex items-start justify-between gap-3">
                                     <div>
-                                        <p class="font-black text-gray-950">{{ $participant->tournament->name }}</p>
-                                        <p class="text-sm text-gray-400">{{ $paymentLabels[$participant->payment_status] ?? $participant->payment_status }}</p>
+                                        <p class="font-black text-gray-950">{{ $participant->displayName() }}</p>
+                                        <p class="text-xs text-gray-400">{{ $participant->tournament->name }}</p>
+                                        <p class="mt-0.5 text-sm text-gray-400">{{ $paymentLabels[$participant->payment_status] ?? $participant->payment_status }}</p>
                                     </div>
                                     <span class="rounded-full px-3 py-1 text-xs font-bold
                                         {{ $participant->status === 'approved' ? 'bg-green-50 text-green-700 ring-1 ring-green-200' : 'bg-amber-50 text-amber-700 ring-1 ring-amber-200' }}">
                                         {{ $participantLabels[$participant->status] ?? $participant->status }}
                                     </span>
                                 </div>
-                                @if ($participant->status === 'pending_payment' && ($url = $participant->tournament->whatsappPaymentUrl(auth()->user())))
-                                    <a href="{{ $url }}" target="_blank"
-                                       class="mt-3 block rounded-lg bg-green-600 px-4 py-2.5 text-center text-sm font-black text-white hover:bg-green-700">
-                                        Pedir medios de pago
-                                    </a>
-                                @endif
                             </div>
                         @empty
                             <p class="text-sm text-gray-400">Aún no estás inscrito en ningún torneo.</p>
@@ -331,22 +329,122 @@
                     </div>
                 </div>
 
-                {{-- Available tournaments --}}
-                @php $availableToJoin = $availableTournaments->filter(fn ($t) => ! $participants->firstWhere('tournament_id', $t->id)); @endphp
-                @if ($availableToJoin->isNotEmpty())
+                {{-- Available tournaments + add jugada --}}
+                @if ($availableTournaments->isNotEmpty())
                     <div class="wc-card rounded-2xl p-5">
                         <h2 class="text-sm font-black uppercase tracking-wide text-gray-950">Torneos disponibles</h2>
                         <div class="mt-4 space-y-3">
-                            @foreach ($availableToJoin as $tournament)
-                                <form method="POST" action="{{ route('tournaments.register', $tournament) }}"
-                                      class="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                                    @csrf
-                                    <p class="font-black text-gray-950">{{ $tournament->name }}</p>
-                                    <p class="mb-3 text-sm text-gray-400">{{ $tournament->entry_fee ? $tournament->currency.' '.$tournament->entry_fee : 'Sin costo' }}</p>
-                                    <button class="w-full rounded-lg border border-blue-200 px-4 py-2 text-sm font-black text-blue-700 hover:bg-blue-50">
-                                        Inscribirme
-                                    </button>
-                                </form>
+                            @foreach ($availableTournaments as $availTournament)
+                                @php $hasJugada = $participants->firstWhere('tournament_id', $availTournament->id); @endphp
+                                <div x-data="{ open: false }">
+                                    <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                                        <p class="font-black text-gray-950">{{ $availTournament->name }}</p>
+                                        <p class="mb-3 text-sm text-gray-400">{{ $availTournament->entry_fee ? $availTournament->currency.' '.$availTournament->entry_fee : 'Sin costo' }}</p>
+                                        <button type="button" @click="open = true"
+                                                class="w-full rounded-lg border border-blue-200 px-4 py-2 text-sm font-black text-blue-700 hover:bg-blue-50">
+                                            {{ $hasJugada ? 'Agregar otra jugada' : 'Inscribirme' }}
+                                        </button>
+                                    </div>
+
+                                    {{-- Payment modal --}}
+                                    <div x-show="open" style="display:none"
+                                         class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                                        {{-- Backdrop --}}
+                                        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="open = false"></div>
+
+                                        {{-- Dialog --}}
+                                        <div x-show="open"
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="opacity-0 scale-95"
+                                             x-transition:enter-end="opacity-100 scale-100"
+                                             x-transition:leave="transition ease-in duration-150"
+                                             x-transition:leave-start="opacity-100 scale-100"
+                                             x-transition:leave-end="opacity-0 scale-95"
+                                             class="relative z-10 w-full max-w-sm rounded-2xl bg-white shadow-2xl">
+
+                                            {{-- Header --}}
+                                            <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+                                                <div>
+                                                    <p class="text-[10px] font-black uppercase tracking-widest text-blue-600">Inscripción</p>
+                                                    <h3 class="text-base font-black text-gray-950">{{ $availTournament->name }}</h3>
+                                                </div>
+                                                <button type="button" @click="open = false"
+                                                        class="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            {{-- Body --}}
+                                            <form method="POST" action="{{ route('tournaments.register', $availTournament) }}"
+                                                  enctype="multipart/form-data">
+                                                @csrf
+                                                <div class="space-y-4 px-6 py-5">
+
+                                                    {{-- QR placeholder / image --}}
+                                                    <div class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-6">
+                                                        @if ($availTournament->payment_qr_path)
+                                                            <img src="{{ Storage::url($availTournament->payment_qr_path) }}"
+                                                                 alt="QR Yape"
+                                                                 class="mx-auto h-44 w-44 object-contain">
+                                                        @else
+                                                            <div class="mb-2 flex h-24 w-24 items-center justify-center rounded-xl bg-purple-50 text-4xl font-black text-purple-300">
+                                                                QR
+                                                            </div>
+                                                            <p class="text-xs font-semibold text-gray-400">Imagen del QR de Yape</p>
+                                                            <p class="text-[10px] text-gray-300">(pendiente de configurar)</p>
+                                                        @endif
+                                                    </div>
+
+                                                    {{-- Yape number --}}
+                                                    @if ($availTournament->payment_yape_number)
+                                                        <div class="rounded-xl bg-purple-50 px-4 py-3 text-center ring-1 ring-purple-200">
+                                                            <p class="text-[10px] font-black uppercase tracking-widest text-purple-500">Número Yape</p>
+                                                            <p class="mt-1 text-2xl font-black tracking-widest text-purple-900">{{ $availTournament->payment_yape_number }}</p>
+                                                        </div>
+                                                    @endif
+
+                                                    {{-- Amount --}}
+                                                    @if ($availTournament->entry_fee)
+                                                        <p class="text-center text-sm text-gray-500">
+                                                            Monto a pagar: <span class="font-black text-gray-950">{{ $availTournament->currency }} {{ number_format($availTournament->entry_fee, 2) }}</span>
+                                                        </p>
+                                                    @endif
+
+                                                    {{-- Entry name --}}
+                                                    <div>
+                                                        <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-gray-600">
+                                                            Nombre de tu jugada <span class="font-normal normal-case text-gray-400">(opcional)</span>
+                                                        </label>
+                                                        <input type="text" name="entry_name" maxlength="60"
+                                                               placeholder="Ej: Los Cracks del 26"
+                                                               class="w-full rounded-lg border-gray-200 text-sm text-gray-950 placeholder:text-gray-300 focus:border-blue-400 focus:ring-blue-200">
+                                                    </div>
+
+                                                    {{-- Payment proof upload --}}
+                                                    <div>
+                                                        <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-gray-600">
+                                                            Captura del pago <span class="text-red-500">*</span>
+                                                        </label>
+                                                        <input type="file" name="payment_proof" accept="image/*,.pdf" required
+                                                               class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-xs file:font-black file:text-blue-700 hover:file:bg-blue-100">
+                                                        <p class="mt-1 text-[10px] text-gray-400">Foto o captura de pantalla del pago por Yape.</p>
+                                                    </div>
+
+                                                </div>
+
+                                                {{-- Footer --}}
+                                                <div class="rounded-b-2xl border-t border-gray-100 bg-gray-50 px-6 py-4">
+                                                    <button type="submit"
+                                                            class="w-full rounded-xl bg-blue-700 px-6 py-3 text-sm font-black text-white hover:bg-blue-800 active:bg-blue-900">
+                                                        Confirmar inscripción
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             @endforeach
                         </div>
                     </div>

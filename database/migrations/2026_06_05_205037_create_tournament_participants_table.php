@@ -21,10 +21,12 @@ return new class extends Migration
             $table->dateTime('approved_at')->nullable();
             $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
             $table->text('notes')->nullable();
+            $table->string('entry_name')->nullable();
+            $table->string('payment_proof_path')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['tournament_id', 'user_id']);
+            $table->index(['tournament_id', 'user_id']);
             $table->index(['tournament_id', 'status']);
         });
     }

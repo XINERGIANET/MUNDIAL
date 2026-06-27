@@ -37,13 +37,13 @@ class RankingService
     {
         DB::transaction(function () use ($tournament) {
             $rows = Prediction::query()
-                ->selectRaw('user_id, SUM(points_awarded) as total_points')
+                ->selectRaw('participant_id, user_id, SUM(points_awarded) as total_points')
                 ->selectRaw("SUM(CASE WHEN result_type = 'exact_score' THEN 1 ELSE 0 END) as exact_scores_count")
                 ->selectRaw("SUM(CASE WHEN result_type = 'correct_result' THEN 1 ELSE 0 END) as correct_results_count")
                 ->selectRaw("SUM(CASE WHEN result_type = 'wrong' THEN 1 ELSE 0 END) as wrong_predictions_count")
                 ->selectRaw('COUNT(*) as predictions_count')
                 ->where('tournament_id', $tournament->id)
-                ->groupBy('user_id')
+                ->groupBy('participant_id', 'user_id')
                 ->orderByDesc('total_points')
                 ->orderByDesc('exact_scores_count')
                 ->get();
@@ -52,8 +52,9 @@ class RankingService
 
             foreach ($rows as $row) {
                 TournamentRanking::updateOrCreate(
-                    ['tournament_id' => $tournament->id, 'user_id' => $row->user_id],
+                    ['tournament_id' => $tournament->id, 'participant_id' => $row->participant_id],
                     [
+                        'user_id' => $row->user_id,
                         'total_points' => (int) $row->total_points,
                         'exact_scores_count' => (int) $row->exact_scores_count,
                         'correct_results_count' => (int) $row->correct_results_count,
@@ -68,6 +69,9 @@ class RankingService
 
     public function getRanking(Tournament $tournament)
     {
-        return $tournament->rankings()->with('user')->orderBy('position')->get();
+        return $tournament->rankings()
+            ->with(['user', 'participant'])
+            ->orderBy('position')
+            ->get();
     }
 }

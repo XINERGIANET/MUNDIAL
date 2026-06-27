@@ -14,6 +14,7 @@ class StorePredictionRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'participant_id'       => ['required', 'integer'],
             'predicted_home_score' => ['required', 'integer', 'min:0', 'max:30'],
             'predicted_away_score' => ['required', 'integer', 'min:0', 'max:30'],
         ];

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('tournament_id')->constrained()->cascadeOnDelete();
             $table->foreignId('match_id')->constrained('matches')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('participant_id')->constrained('tournament_participants')->cascadeOnDelete();
             $table->unsignedTinyInteger('predicted_home_score');
             $table->unsignedTinyInteger('predicted_away_score');
             $table->integer('points_awarded')->default(0)->index();
@@ -24,8 +25,8 @@ return new class extends Migration
             $table->dateTime('calculated_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['match_id', 'user_id']);
-            $table->index(['tournament_id', 'user_id']);
+            $table->unique(['match_id', 'participant_id']);
+            $table->index(['tournament_id', 'participant_id']);
         });
     }
 

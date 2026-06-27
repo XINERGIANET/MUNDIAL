@@ -14,6 +14,15 @@ Route::model('match', FootballMatch::class);
 Route::get('/', [PublicController::class, 'home'])->name('home');
 Route::get('/torneos', [PublicController::class, 'tournaments'])->name('tournaments.index');
 Route::get('/torneos/{tournament}/ranking', [PublicController::class, 'ranking'])->name('tournaments.ranking');
+Route::get('/resultados', function () {
+    $tournament = \App\Models\Tournament::query()
+        ->where('is_active', true)
+        ->whereIn('status', ['open', 'running', 'finished'])
+        ->orderBy('starts_at')
+        ->first();
+    abort_unless($tournament, 404, 'No hay torneos activos.');
+    return redirect()->route('tournaments.ranking', $tournament);
+})->name('results');
 
 Route::get('/dashboard', [UserDashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
 
@@ -23,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/verificar-celular', [PhoneVerificationController::class, 'store'])->middleware('throttle:5,1')->name('phone.verify.store');
     Route::post('/verificar-celular/reenviar', [PhoneVerificationController::class, 'resend'])->name('phone.verify.resend');
     Route::post('/torneos/{tournament}/inscripcion', [TournamentRegistrationController::class, 'store'])->name('tournaments.register');
+    Route::get('/comprobante/{participant}', [TournamentRegistrationController::class, 'serveProof'])->name('participants.proof');
     Route::post('/torneos/{tournament}/pronosticos', [PredictionController::class, 'bulkStore'])->name('predictions.bulk-store');
     Route::post('/partidos/{match}/pronostico', [PredictionController::class, 'store'])->name('predictions.store');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

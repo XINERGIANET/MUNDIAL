@@ -14,6 +14,7 @@ class TournamentRanking extends Model
     protected $fillable = [
         'tournament_id',
         'user_id',
+        'participant_id',
         'total_points',
         'exact_scores_count',
         'correct_results_count',
@@ -30,5 +31,10 @@ class TournamentRanking extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function participant(): BelongsTo
+    {
+        return $this->belongsTo(TournamentParticipant::class, 'participant_id');
     }
 }

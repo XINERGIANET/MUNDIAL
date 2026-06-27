@@ -23,6 +23,8 @@ return new class extends Migration
             $table->decimal('entry_fee', 12, 2)->nullable();
             $table->string('currency', 8)->default('PEN');
             $table->string('payment_whatsapp_number')->nullable();
+            $table->string('payment_yape_number')->nullable();
+            $table->string('payment_qr_path')->nullable();
             $table->text('payment_message')->nullable();
             $table->text('rules')->nullable();
             $table->unsignedInteger('exact_score_points')->default(5);

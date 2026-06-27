@@ -21,6 +21,9 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         Inicio
                     </x-nav-link>
+                    <x-nav-link :href="route('results')" :active="request()->routeIs('tournaments.ranking')">
+                        Resultados
+                    </x-nav-link>
 
                     @if (Auth::user()->hasAnyRole(['super_admin', 'tournament_admin']))
                         <x-nav-link :href="url('/admin')" :active="request()->is('admin*')">
@@ -87,6 +90,9 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 Inicio
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('results')" :active="request()->routeIs('tournaments.ranking')">
+                Resultados
             </x-responsive-nav-link>
 
             @if (Auth::user()->hasAnyRole(['super_admin', 'tournament_admin']))

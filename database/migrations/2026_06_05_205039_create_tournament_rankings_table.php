@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tournament_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('participant_id')->constrained('tournament_participants')->cascadeOnDelete();
             $table->integer('total_points')->default(0);
             $table->unsignedInteger('exact_scores_count')->default(0);
             $table->unsignedInteger('correct_results_count')->default(0);
@@ -23,7 +24,7 @@ return new class extends Migration
             $table->unsignedInteger('position')->default(0)->index();
             $table->timestamps();
 
-            $table->unique(['tournament_id', 'user_id']);
+            $table->unique(['tournament_id', 'participant_id']);
             $table->index(['tournament_id', 'total_points']);
         });
     }

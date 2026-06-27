@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TournamentParticipant extends Model
@@ -22,6 +24,8 @@ class TournamentParticipant extends Model
         'predictions_finalized_at',
         'approved_by',
         'notes',
+        'entry_name',
+        'payment_proof_path',
     ];
 
     protected function casts(): array
@@ -46,6 +50,21 @@ class TournamentParticipant extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function predictions(): HasMany
+    {
+        return $this->hasMany(Prediction::class, 'participant_id');
+    }
+
+    public function ranking(): HasOne
+    {
+        return $this->hasOne(TournamentRanking::class, 'participant_id');
+    }
+
+    public function displayName(): string
+    {
+        return $this->entry_name ?? $this->user->name;
     }
 
     public function isApproved(): bool

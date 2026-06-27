@@ -15,6 +15,7 @@ class Prediction extends Model
         'tournament_id',
         'match_id',
         'user_id',
+        'participant_id',
         'predicted_home_score',
         'predicted_away_score',
         'points_awarded',
@@ -41,5 +42,10 @@ class Prediction extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function participant(): BelongsTo
+    {
+        return $this->belongsTo(TournamentParticipant::class, 'participant_id');
     }
 }

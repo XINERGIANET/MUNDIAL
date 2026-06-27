@@ -4,10 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\FootballMatch;
 use App\Models\Prediction;
-use App\Models\Team;
 use App\Models\Tournament;
 use App\Models\TournamentParticipant;
-use App\Models\TournamentPhase;
 use App\Models\User;
 use App\Services\RankingService;
 use Illuminate\Database\Seeder;
@@ -62,13 +60,14 @@ class DatabaseSeeder extends Seeder
             ['slug' => 'mundial-demo-2026'],
             [
                 'name'                    => 'Mundial 2026',
-                'description'             => 'Polla oficial del Mundial 2026 — fase eliminatoria desde los Dieciseisavos de Final.',
-                'starts_at'               => '2026-06-28 15:00:00',
+                'description'             => 'Polla oficial del Mundial 2026 — fase eliminatoria desde los Octavos de Final.',
+                'starts_at'               => '2026-07-04 13:00:00',
                 'ends_at'                 => '2026-07-19 15:00:00',
                 'status'                  => 'open',
                 'entry_fee'               => 20,
                 'currency'                => 'PEN',
                 'payment_whatsapp_number' => '51999999999',
+                'payment_yape_number'     => '999 999 999',
                 'exact_score_points'      => 5,
                 'correct_result_points'   => 3,
                 'wrong_prediction_points' => 0,
@@ -81,39 +80,62 @@ class DatabaseSeeder extends Seeder
         $matchOne = FootballMatch::query()->where('tournament_id', $tournament->id)->orderBy('starts_at')->first();
         $matchTwo = FootballMatch::query()->where('tournament_id', $tournament->id)->orderBy('starts_at')->skip(1)->first();
 
-        foreach ($users as $user) {
-            TournamentParticipant::updateOrCreate(
-                ['tournament_id' => $tournament->id, 'user_id' => $user->id],
-                [
-                    'status'         => 'approved',
-                    'payment_status' => 'paid',
-                    'paid_at'        => now(),
-                    'approved_at'    => now(),
-                    'approved_by'    => $admin->id,
-                ]
-            );
-        }
+        // Crear una jugada por cada usuario demo
+        $participants = $users->map(function ($user) use ($tournament, $admin) {
+            return TournamentParticipant::create([
+                'tournament_id'  => $tournament->id,
+                'user_id'        => $user->id,
+                'entry_name'     => $user->name . ' 01',
+                'status'         => 'approved',
+                'payment_status' => 'paid',
+                'paid_at'        => now(),
+                'approved_at'    => now(),
+                'approved_by'    => $admin->id,
+            ]);
+        });
+
+        // Segunda jugada para el primer usuario (demo de múltiples jugadas)
+        $secondEntry = TournamentParticipant::create([
+            'tournament_id'  => $tournament->id,
+            'user_id'        => $users->first()->id,
+            'entry_name'     => $users->first()->name . ' 02',
+            'status'         => 'approved',
+            'payment_status' => 'paid',
+            'paid_at'        => now(),
+            'approved_at'    => now(),
+            'approved_by'    => $admin->id,
+        ]);
 
         $scores = [[2, 1], [1, 1], [0, 2]];
-        foreach ($users->values() as $index => $user) {
-            Prediction::updateOrCreate(
-                ['match_id' => $matchOne->id, 'user_id' => $user->id],
-                [
-                    'tournament_id'          => $tournament->id,
-                    'predicted_home_score'   => $scores[$index][0],
-                    'predicted_away_score'   => $scores[$index][1],
-                ]
-            );
+        foreach ($participants->values() as $index => $participant) {
+            Prediction::create([
+                'match_id'             => $matchOne->id,
+                'tournament_id'        => $tournament->id,
+                'user_id'              => $participant->user_id,
+                'participant_id'       => $participant->id,
+                'predicted_home_score' => $scores[$index][0],
+                'predicted_away_score' => $scores[$index][1],
+            ]);
 
-            Prediction::updateOrCreate(
-                ['match_id' => $matchTwo->id, 'user_id' => $user->id],
-                [
-                    'tournament_id'        => $tournament->id,
-                    'predicted_home_score' => 1,
-                    'predicted_away_score' => 0,
-                ]
-            );
+            Prediction::create([
+                'match_id'             => $matchTwo->id,
+                'tournament_id'        => $tournament->id,
+                'user_id'              => $participant->user_id,
+                'participant_id'       => $participant->id,
+                'predicted_home_score' => 1,
+                'predicted_away_score' => 0,
+            ]);
         }
+
+        // Pronósticos para la segunda jugada del primer usuario
+        Prediction::create([
+            'match_id'             => $matchOne->id,
+            'tournament_id'        => $tournament->id,
+            'user_id'              => $users->first()->id,
+            'participant_id'       => $secondEntry->id,
+            'predicted_home_score' => 0,
+            'predicted_away_score' => 1,
+        ]);
 
         app(RankingService::class)->recalculateTournamentRanking($tournament);
     }
