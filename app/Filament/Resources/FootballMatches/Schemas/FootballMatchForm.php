@@ -17,6 +17,22 @@ class FootballMatchForm
                 Select::make('tournament_id')->label('Torneo')->relationship('tournament', 'name')->required()->searchable(),
                 Select::make('phase_id')->label('Fase')->relationship('phase', 'name')->required()->searchable(),
                 Select::make('group_id')->label('Grupo')->relationship('group', 'name')->searchable(),
+                Select::make('home_source_match_id')
+                    ->label('Partido fuente (equipo local)')
+                    ->helperText('Partido de 16avos cuyo ganador será el equipo local.')
+                    ->relationship('homeSourceMatch', 'id')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => ($record->homeTeam?->name ?? '?') . ' vs ' . ($record->awayTeam?->name ?? '?'))
+                    ->searchable()
+                    ->nullable()
+                    ->preload(),
+                Select::make('away_source_match_id')
+                    ->label('Partido fuente (equipo visitante)')
+                    ->helperText('Partido de 16avos cuyo ganador será el equipo visitante.')
+                    ->relationship('awaySourceMatch', 'id')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => ($record->homeTeam?->name ?? '?') . ' vs ' . ($record->awayTeam?->name ?? '?'))
+                    ->searchable()
+                    ->nullable()
+                    ->preload(),
                 Select::make('home_team_id')->label('Equipo local')->relationship('homeTeam', 'name')->required()->searchable(),
                 Select::make('away_team_id')->label('Equipo visitante')->relationship('awayTeam', 'name')->required()->searchable()->different('home_team_id'),
                 DateTimePicker::make('starts_at')->label('Inicio')->required(),

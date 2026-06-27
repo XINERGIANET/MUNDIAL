@@ -16,19 +16,26 @@ class PublicController extends Controller
             ->where('is_active', true)
             ->first();
 
-        $matches = $tournament
-            ? FootballMatch::with(['homeTeam', 'awayTeam', 'phase'])
+        $octavos = $tournament
+            ? FootballMatch::with([
+                'homeTeam',
+                'awayTeam',
+                'homeSourceMatch.homeTeam',
+                'homeSourceMatch.awayTeam',
+                'awaySourceMatch.homeTeam',
+                'awaySourceMatch.awayTeam',
+              ])
                 ->where('tournament_id', $tournament->id)
+                ->whereHas('phase', fn ($q) => $q->where('order', '>', 0))
                 ->whereHas('homeTeam')
                 ->whereHas('awayTeam')
                 ->orderBy('starts_at')
-                ->limit(8)
                 ->get()
             : collect();
 
         return view('public.home', [
             'tournament' => $tournament,
-            'matches'    => $matches,
+            'octavos'    => $octavos,
         ]);
     }
 

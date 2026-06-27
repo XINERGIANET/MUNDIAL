@@ -19,6 +19,8 @@ class FootballMatch extends Model
         'tournament_id',
         'phase_id',
         'group_id',
+        'home_source_match_id',
+        'away_source_match_id',
         'home_team_id',
         'away_team_id',
         'starts_at',
@@ -54,6 +56,16 @@ class FootballMatch extends Model
     public function group(): BelongsTo
     {
         return $this->belongsTo(TournamentGroup::class, 'group_id');
+    }
+
+    public function homeSourceMatch(): BelongsTo
+    {
+        return $this->belongsTo(FootballMatch::class, 'home_source_match_id');
+    }
+
+    public function awaySourceMatch(): BelongsTo
+    {
+        return $this->belongsTo(FootballMatch::class, 'away_source_match_id');
     }
 
     public function homeTeam(): BelongsTo

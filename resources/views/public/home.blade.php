@@ -6,10 +6,6 @@
                     <span class="grid h-11 w-11 place-items-center rounded-lg bg-white text-sm font-black text-blue-800">26</span>
                     <span class="font-black uppercase tracking-wide">Polla Mundialista</span>
                 </a>
-                <div class="flex items-center gap-4 text-sm font-semibold">
-                    <a href="{{ route('login') }}" class="text-white/85 hover:text-white">Iniciar sesión</a>
-                    <a href="{{ route('register') }}" class="rounded-md bg-white px-4 py-2 text-blue-800 hover:bg-blue-50">Registrarse</a>
-                </div>
             </div>
         </header>
 
@@ -32,60 +28,120 @@
             </section>
 
             {{-- Match schedule --}}
-            <section class="max-w-3xl mx-auto px-4 py-10">
-                <div class="mb-6">
-                    <p class="text-sm font-black uppercase tracking-wide text-red-600">Fase eliminatoria</p>
-                    <h2 class="text-2xl font-black text-gray-950">Dieciseisavos de Final</h2>
-                    <p class="mt-1 text-sm text-gray-500">Horarios en hora de Lima (Perú).</p>
-                </div>
-
-                @forelse ($matches->groupBy(fn ($m) => $m->starts_at->setTimezone('America/Lima')->format('Y-m-d')) as $day => $dayMatches)
-                    <div class="mb-8">
-                        <h3 class="mb-3 text-xs font-black uppercase tracking-widest text-gray-400 border-b border-gray-200 pb-2">
-                            {{ $dayMatches->first()->starts_at->setTimezone('America/Lima')->locale('es')->isoFormat('dddd D [de] MMMM') }}
-                        </h3>
-                        <div class="grid gap-2">
-                            @foreach ($dayMatches as $match)
-                                <div class="wc-card rounded-lg p-4 flex items-center gap-3">
-
-                                    {{-- Home team --}}
-                                    <div class="flex flex-1 items-center justify-end gap-3">
-                                        @if ($match->homeTeam->is_active)
-                                            <span class="text-right text-sm font-black text-gray-900 leading-tight">{{ $match->homeTeam->name }}</span>
-                                            <img src="{{ $match->homeTeam->logo_path }}"
-                                                 alt="{{ $match->homeTeam->name }}"
-                                                 class="h-8 w-12 object-contain rounded-sm flex-shrink-0">
-                                        @else
-                                            <span class="text-right text-sm font-semibold text-gray-400 leading-tight">A definir</span>
-                                            <span class="h-8 w-12 flex-shrink-0 rounded-sm bg-gray-100 flex items-center justify-center text-gray-300 text-xs">?</span>
-                                        @endif
-                                    </div>
-
-                                    {{-- Time --}}
-                                    <div class="flex flex-col items-center flex-shrink-0 w-16">
-                                        <span class="text-sm font-black text-blue-700">{{ $match->starts_at->setTimezone('America/Lima')->format('g:i A') }}</span>
-                                    </div>
-
-                                    {{-- Away team --}}
-                                    <div class="flex flex-1 items-center gap-3">
-                                        @if ($match->awayTeam->is_active)
-                                            <img src="{{ $match->awayTeam->logo_path }}"
-                                                 alt="{{ $match->awayTeam->name }}"
-                                                 class="h-8 w-12 object-contain rounded-sm flex-shrink-0">
-                                            <span class="text-sm font-black text-gray-900 leading-tight">{{ $match->awayTeam->name }}</span>
-                                        @else
-                                            <span class="h-8 w-12 flex-shrink-0 rounded-sm bg-gray-100 flex items-center justify-center text-gray-300 text-xs">?</span>
-                                            <span class="text-sm font-semibold text-gray-400 leading-tight">A definir</span>
-                                        @endif
-                                    </div>
-
-                                </div>
-                            @endforeach
-                        </div>
+            <section class="max-w-5xl mx-auto px-4 py-10">
+                {{-- Octavos con Posibles --}}
+                @if ($octavos->isNotEmpty())
+                    <div class="mt-10 mb-6">
+                        <p class="text-sm font-black uppercase tracking-wide text-red-600">Fase eliminatoria</p>
+                        <h2 class="text-2xl font-black text-gray-950">Octavos de Final</h2>
+                        <p class="mt-1 text-sm text-gray-500">Partidos a pronosticar — horarios en hora de Lima (Perú).</p>
                     </div>
-                @empty
-                    <p class="text-sm text-gray-500">Los partidos se publicarán pronto.</p>
-                @endforelse
+
+                    @foreach ($octavos->groupBy(fn ($m) => $m->starts_at->setTimezone('America/Lima')->format('Y-m-d')) as $day => $dayMatches)
+                        <div class="mb-6">
+                            <h3 class="mb-3 border-b border-gray-200 pb-2 text-xs font-black uppercase tracking-widest text-gray-400">
+                                {{ $dayMatches->first()->starts_at->setTimezone('America/Lima')->locale('es')->isoFormat('dddd D [de] MMMM') }}
+                            </h3>
+                            <div class="grid gap-3">
+                                @foreach ($dayMatches as $match)
+                                    @php
+                                        $homeSrc = $match->homeSourceMatch;
+                                        $awaySrc = $match->awaySourceMatch;
+                                    @endphp
+                                    <div class="wc-card rounded-xl p-5">
+                                        <div class="flex items-center gap-3">
+
+                                            {{-- Posibles local --}}
+                                            @if ($homeSrc)
+                                                <div class="hidden shrink-0 flex-col items-center gap-1.5 sm:flex">
+                                                    <p class="text-[9px] font-black uppercase tracking-widest text-gray-300">Posibles</p>
+                                                    <div class="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-3">
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="flex items-center gap-2">
+                                                                @if ($homeSrc->homeTeam?->logo_path)
+                                                                    <img src="{{ $homeSrc->homeTeam->logo_path }}" alt="" class="h-6 w-9 shrink-0 rounded object-cover">
+                                                                @endif
+                                                                <span class="text-sm font-black leading-tight text-gray-800">{{ $homeSrc->homeTeam?->name ?? '?' }}</span>
+                                                            </div>
+                                                            <span class="shrink-0 text-xs font-bold text-gray-300">vs</span>
+                                                            <div class="flex items-center gap-2">
+                                                                @if ($homeSrc->awayTeam?->logo_path)
+                                                                    <img src="{{ $homeSrc->awayTeam->logo_path }}" alt="" class="h-6 w-9 shrink-0 rounded object-cover">
+                                                                @endif
+                                                                <span class="text-sm font-black leading-tight text-gray-800">{{ $homeSrc->awayTeam?->name ?? '?' }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                            {{-- Equipo local --}}
+                                            <div class="flex flex-1 flex-col items-center gap-2 text-center">
+                                                @if ($match->homeTeam?->logo_path && $match->homeTeam->is_active)
+                                                    <img src="{{ $match->homeTeam->logo_path }}" alt="{{ $match->homeTeam->name }}"
+                                                         class="h-14 w-20 rounded-lg object-contain ring-1 ring-gray-100">
+                                                @else
+                                                    <div class="flex h-14 w-20 items-center justify-center rounded-lg bg-gray-100 text-2xl text-gray-300 ring-1 ring-gray-200">?</div>
+                                                @endif
+                                                <div>
+                                                    <p class="font-black leading-tight text-gray-950">{{ $match->homeTeam?->name ?? 'Por definir' }}</p>
+                                                    <p class="text-xs font-bold uppercase tracking-wide text-gray-400">Local</p>
+                                                </div>
+                                            </div>
+
+                                            {{-- Centro: hora --}}
+                                            <div class="flex shrink-0 flex-col items-center gap-1">
+                                                <div class="rounded-xl border-2 border-dashed border-gray-200 px-5 py-3 text-center">
+                                                    <p class="text-sm font-black text-gray-300">VS</p>
+                                                </div>
+                                                <p class="text-xs font-bold text-blue-600">{{ $match->starts_at->setTimezone('America/Lima')->format('g:i A') }}</p>
+                                            </div>
+
+                                            {{-- Equipo visitante --}}
+                                            <div class="flex flex-1 flex-col items-center gap-2 text-center">
+                                                @if ($match->awayTeam?->logo_path && $match->awayTeam->is_active)
+                                                    <img src="{{ $match->awayTeam->logo_path }}" alt="{{ $match->awayTeam->name }}"
+                                                         class="h-14 w-20 rounded-lg object-contain ring-1 ring-gray-100">
+                                                @else
+                                                    <div class="flex h-14 w-20 items-center justify-center rounded-lg bg-gray-100 text-2xl text-gray-300 ring-1 ring-gray-200">?</div>
+                                                @endif
+                                                <div>
+                                                    <p class="font-black leading-tight text-gray-950">{{ $match->awayTeam?->name ?? 'Por definir' }}</p>
+                                                    <p class="text-xs font-bold uppercase tracking-wide text-gray-400">Visitante</p>
+                                                </div>
+                                            </div>
+
+                                            {{-- Posibles visitante --}}
+                                            @if ($awaySrc)
+                                                <div class="hidden shrink-0 flex-col items-center gap-1.5 sm:flex">
+                                                    <p class="text-[9px] font-black uppercase tracking-widest text-gray-300">Posibles</p>
+                                                    <div class="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-3">
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="flex items-center gap-2">
+                                                                @if ($awaySrc->homeTeam?->logo_path)
+                                                                    <img src="{{ $awaySrc->homeTeam->logo_path }}" alt="" class="h-6 w-9 shrink-0 rounded object-cover">
+                                                                @endif
+                                                                <span class="text-sm font-black leading-tight text-gray-800">{{ $awaySrc->homeTeam?->name ?? '?' }}</span>
+                                                            </div>
+                                                            <span class="shrink-0 text-xs font-bold text-gray-300">vs</span>
+                                                            <div class="flex items-center gap-2">
+                                                                @if ($awaySrc->awayTeam?->logo_path)
+                                                                    <img src="{{ $awaySrc->awayTeam->logo_path }}" alt="" class="h-6 w-9 shrink-0 rounded object-cover">
+                                                                @endif
+                                                                <span class="text-sm font-black leading-tight text-gray-800">{{ $awaySrc->awayTeam?->name ?? '?' }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                @endif
 
                 {{-- Bottom CTA --}}
                 <div class="mt-6 rounded-lg wc-shell p-6 text-center text-white">

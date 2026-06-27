@@ -29,29 +29,170 @@
     {{-- Filter bar --}}
     <div class="wc-shell">
         <div class="w-full px-4 py-5 sm:px-6 lg:px-8">
-            <form method="GET" action="{{ route('dashboard') }}"
-                  class="grid gap-3 rounded-xl bg-white/10 p-4 ring-1 ring-white/20 backdrop-blur md:grid-cols-3">
-                <div>
-                    <label class="mb-1 block text-xs font-black uppercase tracking-wide text-white/70">Torneo</label>
-                    <select name="torneo" class="w-full rounded-lg border-white/20 bg-white text-sm font-semibold text-gray-950">
-                        @foreach ($availableTournaments as $tournament)
-                            <option value="{{ $tournament->id }}" @selected($selectedTournament?->id === $tournament->id)>{{ $tournament->name }}</option>
+            <div class="flex flex-col gap-3 rounded-xl bg-white/10 p-4 ring-1 ring-white/20 backdrop-blur md:flex-row md:items-end md:justify-between md:gap-4">
+
+                {{-- Izquierda: inscripción rápida --}}
+                @if ($availableTournaments->isNotEmpty())
+                    <div class="flex flex-1 flex-wrap items-end gap-3">
+                        @foreach ($availableTournaments as $availTournament)
+                            @php $hasJugada = $participants->firstWhere('tournament_id', $availTournament->id); @endphp
+                            <div x-data="{ open: false }" class="flex-1">
+                                <p class="mb-1.5 text-xs font-black uppercase tracking-wide text-white/60">
+                                    {{ $availTournament->name }}
+                                </p>
+                                <button type="button" @click="open = true"
+                                        class="flex w-full items-center justify-center gap-2 rounded-lg bg-white/15 px-6 py-3 text-sm font-black text-white ring-1 ring-white/25 hover:bg-white/25 transition">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    {{ $hasJugada ? 'Agregar otra jugada' : 'Inscribirme' }}
+                                </button>
+
+                                {{-- Payment modal (teleportado al body para evitar stacking context del padre) --}}
+                                <template x-teleport="body">
+                                <div x-show="open" style="display:none"
+                                     class="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="open = false"></div>
+                                    <div x-show="open"
+                                         x-transition:enter="transition ease-out duration-200"
+                                         x-transition:enter-start="opacity-0 scale-95"
+                                         x-transition:enter-end="opacity-100 scale-100"
+                                         x-transition:leave="transition ease-in duration-150"
+                                         x-transition:leave-start="opacity-100 scale-100"
+                                         x-transition:leave-end="opacity-0 scale-95"
+                                         class="relative z-10 w-full max-w-sm rounded-2xl bg-white shadow-2xl">
+                                        <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+                                            <div>
+                                                <p class="text-[10px] font-black uppercase tracking-widest text-blue-600">Inscripción</p>
+                                                <h3 class="text-base font-black text-gray-950">{{ $availTournament->name }}</h3>
+                                            </div>
+                                            <button type="button" @click="open = false"
+                                                    class="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <form method="POST" action="{{ route('tournaments.register', $availTournament) }}"
+                                              enctype="multipart/form-data">
+                                            @csrf
+                                            <div class="space-y-4 px-6 py-5">
+                                                <div class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-6">
+                                                    @if ($availTournament->payment_qr_path)
+                                                        <img src="{{ Storage::url($availTournament->payment_qr_path) }}"
+                                                             alt="QR Yape"
+                                                             class="mx-auto h-44 w-44 object-contain">
+                                                    @else
+                                                        <div class="mb-2 flex h-24 w-24 items-center justify-center rounded-xl bg-purple-50 text-4xl font-black text-purple-300">QR</div>
+                                                        <p class="text-xs font-semibold text-gray-400">Imagen del QR de Yape</p>
+                                                        <p class="text-[10px] text-gray-300">(pendiente de configurar)</p>
+                                                    @endif
+                                                </div>
+                                                @if ($availTournament->payment_yape_number)
+                                                    <div class="rounded-xl bg-purple-50 px-4 py-3 text-center ring-1 ring-purple-200">
+                                                        <p class="text-[10px] font-black uppercase tracking-widest text-purple-500">Número Yape</p>
+                                                        <p class="mt-1 text-2xl font-black tracking-widest text-purple-900">{{ $availTournament->payment_yape_number }}</p>
+                                                    </div>
+                                                @endif
+                                                @if ($availTournament->entry_fee)
+                                                    <p class="text-center text-sm text-gray-500">
+                                                        Monto a pagar: <span class="font-black text-gray-950">{{ $availTournament->currency }} {{ number_format($availTournament->entry_fee, 2) }}</span>
+                                                    </p>
+                                                @endif
+                                                <div>
+                                                    <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-gray-600">
+                                                        Nombre de tu jugada <span class="font-normal normal-case text-gray-400">(opcional)</span>
+                                                    </label>
+                                                    <input type="text" name="entry_name" maxlength="60"
+                                                           placeholder="Ej: Los Cracks del 26"
+                                                           class="w-full rounded-lg border-gray-200 text-sm text-gray-950 placeholder:text-gray-300 focus:border-blue-400 focus:ring-blue-200">
+                                                </div>
+                                                <div>
+                                                    <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-gray-600">
+                                                        Captura del pago <span class="text-red-500">*</span>
+                                                    </label>
+                                                    <input type="file" name="payment_proof" accept="image/*,.pdf" required
+                                                           class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-xs file:font-black file:text-blue-700 hover:file:bg-blue-100">
+                                                    <p class="mt-1 text-[10px] text-gray-400">Foto o captura de pantalla del pago por Yape.</p>
+                                                </div>
+                                            </div>
+                                            <div class="rounded-b-2xl border-t border-gray-100 bg-gray-50 px-6 py-4">
+                                                <button type="submit"
+                                                        class="w-full rounded-xl bg-blue-700 px-6 py-3 text-sm font-black text-white hover:bg-blue-800 active:bg-blue-900">
+                                                    Confirmar inscripción
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                </template>
+                            </div>
                         @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="mb-1 block text-xs font-black uppercase tracking-wide text-white/70">Estado</label>
-                    <select name="estado" class="w-full rounded-lg border-white/20 bg-white text-sm font-semibold text-gray-950">
-                        <option value="abiertos" @selected($selectedStatus === 'abiertos')>Abiertos</option>
-                        <option value="cerrados" @selected($selectedStatus === 'cerrados')>Cerrados</option>
-                    </select>
-                </div>
-                <div class="flex items-end">
-                    <button class="w-full rounded-lg bg-white px-4 py-2.5 text-sm font-black text-blue-800 hover:bg-blue-50">
-                        Filtrar calendario
-                    </button>
-                </div>
-            </form>
+                    </div>
+                @endif
+
+                {{-- Derecha: filtro de estado --}}
+                <form id="estado-form" method="GET" action="{{ route('dashboard') }}"
+                      class="flex flex-1 items-end">
+                    <div x-data="{
+                            open: false,
+                            value: '{{ $selectedStatus }}',
+                            label: '{{ $selectedStatus === 'cerrados' ? 'Cerrados' : 'Abiertos' }}'
+                         }"
+                         @click.outside="open = false"
+                         class="relative w-full">
+                        <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-white/60">Estado</label>
+                        <button type="button"
+                                @click="open = !open"
+                                class="flex w-full items-center justify-between gap-3 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-gray-900 shadow-sm">
+                            <span x-text="label"></span>
+                            <svg class="h-4 w-4 text-gray-400 transition-transform duration-150"
+                                 :class="{ 'rotate-180': open }"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+
+                        <div x-show="open" style="display:none"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute right-0 top-full z-10 mt-1.5 w-full overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5">
+                            <button type="button"
+                                    @click="value='abiertos'; label='Abiertos'; open=false; $nextTick(()=>document.getElementById('estado-form').submit())"
+                                    class="flex w-full items-center gap-3 px-4 py-3 text-sm text-left transition hover:bg-gray-50"
+                                    :class="value==='abiertos' ? 'font-black text-blue-700' : 'font-semibold text-gray-700'">
+                                <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full ring-1 transition"
+                                      :class="value==='abiertos' ? 'bg-blue-600 ring-blue-600' : 'ring-gray-200'">
+                                    <svg x-show="value==='abiertos'" class="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </span>
+                                Abiertos
+                            </button>
+                            <div class="mx-4 h-px bg-gray-100"></div>
+                            <button type="button"
+                                    @click="value='cerrados'; label='Cerrados'; open=false; $nextTick(()=>document.getElementById('estado-form').submit())"
+                                    class="flex w-full items-center gap-3 px-4 py-3 text-sm text-left transition hover:bg-gray-50"
+                                    :class="value==='cerrados' ? 'font-black text-blue-700' : 'font-semibold text-gray-700'">
+                                <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full ring-1 transition"
+                                      :class="value==='cerrados' ? 'bg-blue-600 ring-blue-600' : 'ring-gray-200'">
+                                    <svg x-show="value==='cerrados'" class="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </span>
+                                Cerrados
+                            </button>
+                        </div>
+
+                        <input type="hidden" name="estado" :value="value">
+                    </div>
+                </form>
+
+            </div>
         </div>
     </div>
 
@@ -142,9 +283,11 @@
                                         $awayTeam        = $match->awayTeam;
                                         $hasTeams        = $homeTeam && $awayTeam;
                                         $isOpen          = $hasTeams && $match->isPredictionOpen() && $homeTeam->is_active && $awayTeam->is_active;
-                                        $canSave = $isOpen && ! $isSaved && $isApproved;
+                                        $canSave         = $isOpen && ! $isSaved && $isApproved;
                                         $isFinished      = $match->status === 'finished';
                                         $isLive          = $match->status === 'live';
+                                        $homeSrc         = $match->homeSourceMatch;
+                                        $awaySrc         = $match->awaySourceMatch;
                                     @endphp
 
                                     @if ($canSave)
@@ -179,6 +322,30 @@
 
                                         {{-- Teams + score --}}
                                         <div class="flex items-center gap-3 sm:gap-6">
+
+                                            {{-- Feeder match (home side) --}}
+                                            @if ($homeSrc)
+                                                <div class="hidden shrink-0 sm:block">
+                                                    <div class="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-3">
+                                                        <p class="mb-2 text-center text-[9px] font-black uppercase tracking-widest text-gray-300">Posibles</p>
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="flex items-center gap-2">
+                                                                @if ($homeSrc->homeTeam?->logo_path)
+                                                                    <img src="{{ $homeSrc->homeTeam->logo_path }}" alt="" class="h-6 w-9 shrink-0 rounded object-cover">
+                                                                @endif
+                                                                <span class="text-sm font-black leading-tight text-gray-800">{{ $homeSrc->homeTeam?->name ?? '?' }}</span>
+                                                            </div>
+                                                            <span class="shrink-0 text-xs font-bold text-gray-300">vs</span>
+                                                            <div class="flex items-center gap-2">
+                                                                @if ($homeSrc->awayTeam?->logo_path)
+                                                                    <img src="{{ $homeSrc->awayTeam->logo_path }}" alt="" class="h-6 w-9 shrink-0 rounded object-cover">
+                                                                @endif
+                                                                <span class="text-sm font-black leading-tight text-gray-800">{{ $homeSrc->awayTeam?->name ?? '?' }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
 
                                             {{-- Home team --}}
                                             <div class="flex flex-1 flex-col items-center gap-2 text-center">
@@ -238,6 +405,30 @@
                                                     <p class="text-xs font-bold uppercase tracking-wide text-gray-400">Visitante</p>
                                                 </div>
                                             </div>
+
+                                            {{-- Feeder match (away side) --}}
+                                            @if ($awaySrc)
+                                                <div class="hidden shrink-0 sm:block">
+                                                    <div class="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-3">
+                                                        <p class="mb-2 text-center text-[9px] font-black uppercase tracking-widest text-gray-300">Posibles</p>
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="flex items-center gap-2">
+                                                                @if ($awaySrc->homeTeam?->logo_path)
+                                                                    <img src="{{ $awaySrc->homeTeam->logo_path }}" alt="" class="h-6 w-9 shrink-0 rounded object-cover">
+                                                                @endif
+                                                                <span class="text-sm font-black leading-tight text-gray-800">{{ $awaySrc->homeTeam?->name ?? '?' }}</span>
+                                                            </div>
+                                                            <span class="shrink-0 text-xs font-bold text-gray-300">vs</span>
+                                                            <div class="flex items-center gap-2">
+                                                                @if ($awaySrc->awayTeam?->logo_path)
+                                                                    <img src="{{ $awaySrc->awayTeam->logo_path }}" alt="" class="h-6 w-9 shrink-0 rounded object-cover">
+                                                                @endif
+                                                                <span class="text-sm font-black leading-tight text-gray-800">{{ $awaySrc->awayTeam?->name ?? '?' }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
 
                                         </div>{{-- /teams --}}
 
@@ -328,127 +519,6 @@
                         @endforelse
                     </div>
                 </div>
-
-                {{-- Available tournaments + add jugada --}}
-                @if ($availableTournaments->isNotEmpty())
-                    <div class="wc-card rounded-2xl p-5">
-                        <h2 class="text-sm font-black uppercase tracking-wide text-gray-950">Torneos disponibles</h2>
-                        <div class="mt-4 space-y-3">
-                            @foreach ($availableTournaments as $availTournament)
-                                @php $hasJugada = $participants->firstWhere('tournament_id', $availTournament->id); @endphp
-                                <div x-data="{ open: false }">
-                                    <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                                        <p class="font-black text-gray-950">{{ $availTournament->name }}</p>
-                                        <p class="mb-3 text-sm text-gray-400">{{ $availTournament->entry_fee ? $availTournament->currency.' '.$availTournament->entry_fee : 'Sin costo' }}</p>
-                                        <button type="button" @click="open = true"
-                                                class="w-full rounded-lg border border-blue-200 px-4 py-2 text-sm font-black text-blue-700 hover:bg-blue-50">
-                                            {{ $hasJugada ? 'Agregar otra jugada' : 'Inscribirme' }}
-                                        </button>
-                                    </div>
-
-                                    {{-- Payment modal --}}
-                                    <div x-show="open" style="display:none"
-                                         class="fixed inset-0 z-50 flex items-center justify-center p-4">
-                                        {{-- Backdrop --}}
-                                        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="open = false"></div>
-
-                                        {{-- Dialog --}}
-                                        <div x-show="open"
-                                             x-transition:enter="transition ease-out duration-200"
-                                             x-transition:enter-start="opacity-0 scale-95"
-                                             x-transition:enter-end="opacity-100 scale-100"
-                                             x-transition:leave="transition ease-in duration-150"
-                                             x-transition:leave-start="opacity-100 scale-100"
-                                             x-transition:leave-end="opacity-0 scale-95"
-                                             class="relative z-10 w-full max-w-sm rounded-2xl bg-white shadow-2xl">
-
-                                            {{-- Header --}}
-                                            <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-                                                <div>
-                                                    <p class="text-[10px] font-black uppercase tracking-widest text-blue-600">Inscripción</p>
-                                                    <h3 class="text-base font-black text-gray-950">{{ $availTournament->name }}</h3>
-                                                </div>
-                                                <button type="button" @click="open = false"
-                                                        class="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                                    </svg>
-                                                </button>
-                                            </div>
-
-                                            {{-- Body --}}
-                                            <form method="POST" action="{{ route('tournaments.register', $availTournament) }}"
-                                                  enctype="multipart/form-data">
-                                                @csrf
-                                                <div class="space-y-4 px-6 py-5">
-
-                                                    {{-- QR placeholder / image --}}
-                                                    <div class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-6">
-                                                        @if ($availTournament->payment_qr_path)
-                                                            <img src="{{ Storage::url($availTournament->payment_qr_path) }}"
-                                                                 alt="QR Yape"
-                                                                 class="mx-auto h-44 w-44 object-contain">
-                                                        @else
-                                                            <div class="mb-2 flex h-24 w-24 items-center justify-center rounded-xl bg-purple-50 text-4xl font-black text-purple-300">
-                                                                QR
-                                                            </div>
-                                                            <p class="text-xs font-semibold text-gray-400">Imagen del QR de Yape</p>
-                                                            <p class="text-[10px] text-gray-300">(pendiente de configurar)</p>
-                                                        @endif
-                                                    </div>
-
-                                                    {{-- Yape number --}}
-                                                    @if ($availTournament->payment_yape_number)
-                                                        <div class="rounded-xl bg-purple-50 px-4 py-3 text-center ring-1 ring-purple-200">
-                                                            <p class="text-[10px] font-black uppercase tracking-widest text-purple-500">Número Yape</p>
-                                                            <p class="mt-1 text-2xl font-black tracking-widest text-purple-900">{{ $availTournament->payment_yape_number }}</p>
-                                                        </div>
-                                                    @endif
-
-                                                    {{-- Amount --}}
-                                                    @if ($availTournament->entry_fee)
-                                                        <p class="text-center text-sm text-gray-500">
-                                                            Monto a pagar: <span class="font-black text-gray-950">{{ $availTournament->currency }} {{ number_format($availTournament->entry_fee, 2) }}</span>
-                                                        </p>
-                                                    @endif
-
-                                                    {{-- Entry name --}}
-                                                    <div>
-                                                        <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-gray-600">
-                                                            Nombre de tu jugada <span class="font-normal normal-case text-gray-400">(opcional)</span>
-                                                        </label>
-                                                        <input type="text" name="entry_name" maxlength="60"
-                                                               placeholder="Ej: Los Cracks del 26"
-                                                               class="w-full rounded-lg border-gray-200 text-sm text-gray-950 placeholder:text-gray-300 focus:border-blue-400 focus:ring-blue-200">
-                                                    </div>
-
-                                                    {{-- Payment proof upload --}}
-                                                    <div>
-                                                        <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-gray-600">
-                                                            Captura del pago <span class="text-red-500">*</span>
-                                                        </label>
-                                                        <input type="file" name="payment_proof" accept="image/*,.pdf" required
-                                                               class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-xs file:font-black file:text-blue-700 hover:file:bg-blue-100">
-                                                        <p class="mt-1 text-[10px] text-gray-400">Foto o captura de pantalla del pago por Yape.</p>
-                                                    </div>
-
-                                                </div>
-
-                                                {{-- Footer --}}
-                                                <div class="rounded-b-2xl border-t border-gray-100 bg-gray-50 px-6 py-4">
-                                                    <button type="submit"
-                                                            class="w-full rounded-xl bg-blue-700 px-6 py-3 text-sm font-black text-white hover:bg-blue-800 active:bg-blue-900">
-                                                        Confirmar inscripción
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
 
                 {{-- Ranking --}}
                 <div class="wc-card rounded-2xl p-5">

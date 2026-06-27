@@ -76,6 +76,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $this->call(WorldCup2026MatchesSeeder::class);
+        $this->call(WorldCup2026RoundOf32Seeder::class);
 
         $matchOne = FootballMatch::query()->where('tournament_id', $tournament->id)->orderBy('starts_at')->first();
         $matchTwo = FootballMatch::query()->where('tournament_id', $tournament->id)->orderBy('starts_at')->skip(1)->first();
