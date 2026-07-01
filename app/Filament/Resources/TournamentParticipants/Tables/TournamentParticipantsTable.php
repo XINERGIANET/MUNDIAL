@@ -40,7 +40,8 @@ class TournamentParticipantsTable
         return $table
             ->columns([
                 TextColumn::make('tournament.name')->label('Torneo')->searchable(),
-                TextColumn::make('user.name')->label('Usuario')->searchable(),
+                TextColumn::make('user.name')->label('Participante')->searchable(),
+                TextColumn::make('entry_name')->label('Nombre de jugada')->searchable()->placeholder('—'),
                 TextColumn::make('user.phone')->label('Celular')->searchable(),
                 TextColumn::make('status')->label('Estado')->badge()->formatStateUsing(fn (?string $state): string => self::statusLabel($state)),
                 TextColumn::make('payment_status')->label('Pago')->badge()->formatStateUsing(fn (?string $state): string => self::paymentLabel($state)),

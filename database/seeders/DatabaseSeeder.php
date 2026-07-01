@@ -67,7 +67,7 @@ class DatabaseSeeder extends Seeder
                 'entry_fee'               => 20,
                 'currency'                => 'PEN',
                 'payment_whatsapp_number' => '51999999999',
-                'payment_yape_number'     => '999 999 999',
+                'payment_yape_number'     => '944 031 514',
                 'exact_score_points'      => 5,
                 'correct_result_points'   => 3,
                 'wrong_prediction_points' => 0,

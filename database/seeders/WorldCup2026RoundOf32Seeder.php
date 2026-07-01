@@ -29,25 +29,25 @@ class WorldCup2026RoundOf32Seeder extends Seeder
         // Partido 78 → alimenta Octavo 3 (visitante)
         ['Costa de Marfil',    'Noruega',                '2026-06-30 17:00:00', 3, 'away'],  // AT&T Stadium, Arlington
         // Partido 79 → alimenta Octavo 4 (local)
-        ['México',             'Clasificado 3ro C/E',    '2026-07-01 01:00:00', 4, 'home'],  // Estadio Azteca, Ciudad de México
+        ['México',      'Ecuador',    '2026-07-01 01:00:00', 4, 'home'],  // Estadio Azteca, Ciudad de México
         // Partido 80 → alimenta Octavo 4 (visitante)
-        ['Ganador Grupo L',    'Clasificado 3ro I/J/K',  '2026-07-01 16:00:00', 4, 'away'],  // Mercedes-Benz Stadium, Atlanta
+        ['Inglaterra',  'Congo DR',   '2026-07-01 16:00:00', 4, 'away'],  // Mercedes-Benz Stadium, Atlanta
         // Partido 83 → alimenta Octavo 5 (local)
-        ['Subcampeón Grupo K', 'Subcampeón Grupo L',     '2026-07-02 23:00:00', 5, 'home'],  // BMO Field, Toronto
+        ['Portugal',    'Croacia',    '2026-07-02 23:00:00', 5, 'home'],  // BMO Field, Toronto
         // Partido 84 → alimenta Octavo 5 (visitante)
-        ['España',             'Subcampeón Grupo J',     '2026-07-02 19:00:00', 5, 'away'],  // SoFi Stadium, Inglewood
+        ['España',      'Austria',    '2026-07-02 19:00:00', 5, 'away'],  // SoFi Stadium, Inglewood
         // Partido 81 → alimenta Octavo 6 (local)
-        ['Estados Unidos',     'Bosnia y Herzegovina',   '2026-07-02 00:00:00', 6, 'home'],  // Levi's Stadium, Santa Clara
+        ['Estados Unidos', 'Bosnia y Herzegovina', '2026-07-02 00:00:00', 6, 'home'],  // Levi's Stadium, Santa Clara
         // Partido 82 → alimenta Octavo 6 (visitante)
-        ['Bélgica',            'Clasificado 3ro A/I/J',  '2026-07-01 20:00:00', 6, 'away'],  // Lumen Field, Seattle
+        ['Bélgica',     'Senegal',    '2026-07-01 20:00:00', 6, 'away'],  // Lumen Field, Seattle
         // Partido 86 → alimenta Octavo 7 (local)
-        ['Argentina',          'Cabo Verde',             '2026-07-03 22:00:00', 7, 'home'],  // Hard Rock Stadium, Miami Gardens
+        ['Argentina',   'Cabo Verde', '2026-07-03 22:00:00', 7, 'home'],  // Hard Rock Stadium, Miami Gardens
         // Partido 88 → alimenta Octavo 7 (visitante)
-        ['Australia',          'Egipto',                 '2026-07-03 18:00:00', 7, 'away'],  // AT&T Stadium, Arlington
+        ['Australia',   'Egipto',     '2026-07-03 18:00:00', 7, 'away'],  // AT&T Stadium, Arlington
         // Partido 85 → alimenta Octavo 8 (local)
-        ['Suiza',              'Clasificado 3ro G/J',    '2026-07-03 03:00:00', 8, 'home'],  // BC Place, Vancouver
+        ['Suiza',       'Argelia',    '2026-07-03 03:00:00', 8, 'home'],  // BC Place, Vancouver
         // Partido 87 → alimenta Octavo 8 (visitante)
-        ['Ganador Grupo K',    'Clasificado 3ro E/I/L',  '2026-07-04 01:30:00', 8, 'away'],  // Arrowhead Stadium, Kansas City
+        ['Colombia',    'Ghana',      '2026-07-04 01:30:00', 8, 'away'],  // Arrowhead Stadium, Kansas City
     ];
 
     // Timestamps de los octavos tal como están en la BD (WorldCup2026MatchesSeeder).
@@ -117,15 +117,25 @@ class WorldCup2026RoundOf32Seeder extends Seeder
     private function addConfirmedTeams(): void
     {
         $teams = [
-            ['name' => 'Paraguay',     'fifa_code' => 'PAR', 'flag' => 'py'],
-            ['name' => 'Suecia',       'fifa_code' => 'SWE', 'flag' => 'se'],
-            ['name' => 'Países Bajos', 'fifa_code' => 'NED', 'flag' => 'nl'],
-            ['name' => 'Japón',        'fifa_code' => 'JPN', 'flag' => 'jp'],
-            ['name' => 'Bélgica',      'fifa_code' => 'BEL', 'flag' => 'be'],
-            ['name' => 'España',       'fifa_code' => 'ESP', 'flag' => 'es'],
-            ['name' => 'Cabo Verde',   'fifa_code' => 'CPV', 'flag' => 'cv'],
-            ['name' => 'Australia',    'fifa_code' => 'AUS', 'flag' => 'au'],
-            ['name' => 'Egipto',       'fifa_code' => 'EGY', 'flag' => 'eg'],
+            ['name' => 'Paraguay',            'fifa_code' => 'PAR', 'flag' => 'py'],
+            ['name' => 'Suecia',              'fifa_code' => 'SWE', 'flag' => 'se'],
+            ['name' => 'Países Bajos',        'fifa_code' => 'NED', 'flag' => 'nl'],
+            ['name' => 'Japón',               'fifa_code' => 'JPN', 'flag' => 'jp'],
+            ['name' => 'Bélgica',             'fifa_code' => 'BEL', 'flag' => 'be'],
+            ['name' => 'España',              'fifa_code' => 'ESP', 'flag' => 'es'],
+            ['name' => 'Cabo Verde',          'fifa_code' => 'CPV', 'flag' => 'cv'],
+            ['name' => 'Australia',           'fifa_code' => 'AUS', 'flag' => 'au'],
+            ['name' => 'Egipto',              'fifa_code' => 'EGY', 'flag' => 'eg'],
+            // Equipos de 16avos confirmados
+            ['name' => 'Ecuador',             'fifa_code' => 'ECU', 'flag' => 'ec'],
+            ['name' => 'Inglaterra',          'fifa_code' => 'ENG', 'flag' => 'gb-eng'],
+            ['name' => 'Congo DR',            'fifa_code' => 'COD', 'flag' => 'cd'],
+            ['name' => 'Portugal',            'fifa_code' => 'POR', 'flag' => 'pt'],
+            ['name' => 'Croacia',             'fifa_code' => 'CRO', 'flag' => 'hr'],
+            ['name' => 'Austria',             'fifa_code' => 'AUT', 'flag' => 'at'],
+            ['name' => 'Senegal',             'fifa_code' => 'SEN', 'flag' => 'sn'],
+            ['name' => 'Argelia',             'fifa_code' => 'ALG', 'flag' => 'dz'],
+            ['name' => 'Ghana',               'fifa_code' => 'GHA', 'flag' => 'gh'],
         ];
 
         foreach ($teams as $data) {

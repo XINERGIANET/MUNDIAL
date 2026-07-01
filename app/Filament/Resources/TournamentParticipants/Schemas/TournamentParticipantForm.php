@@ -17,7 +17,12 @@ class TournamentParticipantForm
         return $schema
             ->components([
                 Select::make('tournament_id')->label('Torneo')->relationship('tournament', 'name')->required()->searchable(),
-                Select::make('user_id')->label('Usuario')->relationship('user', 'phone')->required()->searchable(),
+                Select::make('user_id')
+                    ->label('Titular de la cuenta')
+                    ->relationship('user', 'name')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} · {$record->phone}")
+                    ->required()
+                    ->searchable(),
                 TextInput::make('entry_name')->label('Nombre de jugada')->maxLength(60),
                 Select::make('status')->label('Estado')->options([
                     'pending_payment' => 'Pendiente de pago',

@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\Facades\Blade;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -21,6 +24,18 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
+    public function boot(): void
+    {
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::USER_MENU_BEFORE,
+            fn () => Blade::render(
+                '<a href="' . route('dashboard') . '" class="me-3 flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold text-gray-300 hover:bg-white/10 hover:text-white transition">
+                    ← Dashboard
+                </a>'
+            ),
+        );
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
