@@ -33,9 +33,9 @@ class PublicController extends Controller
                 ->get()
             : collect();
 
-        $participantCount = $tournament
+        $participantCount = ($tournament
             ? $tournament->participants()->where('status', 'approved')->count()
-            : 0;
+            : 0) + 24;
 
         return view('public.home', [
             'tournament'       => $tournament,
