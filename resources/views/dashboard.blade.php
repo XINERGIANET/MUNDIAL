@@ -91,7 +91,12 @@
                                                 @if ($availTournament->payment_yape_number)
                                                     <div class="rounded-xl bg-purple-50 px-4 py-3 text-center ring-1 ring-purple-200">
                                                         <p class="text-[10px] font-black uppercase tracking-widest text-purple-500">Número Yape</p>
-                                                        <p class="mt-1 text-2xl font-black tracking-widest text-purple-900">{{ $availTournament->payment_yape_number }}</p>
+                                                        <div class="mt-1 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+                                                            <p class="text-2xl font-black tracking-widest text-purple-900">{{ $availTournament->payment_yape_number }}</p>
+                                                            <p class="text-sm font-semibold text-purple-800">
+                                                                Nombre: <span class="font-black">Xinergia Net Sac</span>
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 @endif
                                                 @if ($availTournament->entry_fee)

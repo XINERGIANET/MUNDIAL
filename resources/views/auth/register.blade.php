@@ -12,6 +12,10 @@
             step: {{ $showStep2 ? 2 : 1 }},
             sending: false,
             error: '',
+            showPassword: false,
+            showPasswordConfirmation: false,
+            password: '',
+            passwordConfirmation: '',
             async sendCode() {
                 this.sending = true;
                 this.error = '';
@@ -43,7 +47,8 @@
             }
         }"
     >
-        <form method="POST" action="{{ route('register') }}">
+        <form method="POST" action="{{ route('register') }}"
+              @submit="if (password !== passwordConfirmation) { $event.preventDefault(); $refs.passwordConfirmation.setCustomValidity('Las contraseñas no coinciden.'); $refs.passwordConfirmation.reportValidity(); }">
             @csrf
 
             {{-- Canal fijo: SMS --}}
@@ -115,31 +120,32 @@
                 </div>
 
                 <div class="mt-4">
-                    <x-input-label for="email" value="Correo electrónico (opcional)" />
-                    <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" autocomplete="email" />
-                    <x-input-error :messages="$errors->get('email')" class="mt-2" />
-                </div>
-
-                <div class="mt-4">
                     <x-input-label for="password" value="Contraseña" />
-                    <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
+                    <div class="relative mt-1">
+                        <x-text-input id="password" class="block w-full pr-11" x-model="password" x-bind:type="showPassword ? 'text' : 'password'" @input="$nextTick(() => $refs.passwordConfirmation.setCustomValidity(password === passwordConfirmation ? '' : 'Las contraseñas no coinciden.'))" name="password" required autocomplete="new-password" />
+                        <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-gray-500 hover:text-gray-700" :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                            <svg x-show="!showPassword" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <svg x-show="showPassword" x-cloak class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18M10.585 10.587a2 2 0 002.828 2.828M9.878 4.242A9.7 9.7 0 0112 4c4.478 0 8.268 2.943 9.542 7a9.77 9.77 0 01-1.193 2.487M6.61 6.61C4.83 7.8 3.432 9.68 2.458 12c1.274 4.057 5.065 7 9.542 7 1.52 0 2.956-.34 4.232-.947"/></svg>
+                        </button>
+                    </div>
                     <x-input-error :messages="$errors->get('password')" class="mt-2" />
                 </div>
 
                 <div class="mt-4">
                     <x-input-label for="password_confirmation" value="Confirmar contraseña" />
-                    <x-text-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" required autocomplete="new-password" />
+                    <div class="relative mt-1">
+                        <x-text-input x-ref="passwordConfirmation" id="password_confirmation" class="block w-full pr-11" x-model="passwordConfirmation" x-bind:type="showPasswordConfirmation ? 'text' : 'password'" @input="$el.setCustomValidity(password === passwordConfirmation ? '' : 'Las contraseñas no coinciden.')" name="password_confirmation" required autocomplete="new-password" />
+                        <button type="button" @click="showPasswordConfirmation = !showPasswordConfirmation" class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-gray-500 hover:text-gray-700" :aria-label="showPasswordConfirmation ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                            <svg x-show="!showPasswordConfirmation" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <svg x-show="showPasswordConfirmation" x-cloak class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18M10.585 10.587a2 2 0 002.828 2.828M9.878 4.242A9.7 9.7 0 0112 4c4.478 0 8.268 2.943 9.542 7a9.77 9.77 0 01-1.193 2.487M6.61 6.61C4.83 7.8 3.432 9.68 2.458 12c1.274 4.057 5.065 7 9.542 7 1.52 0 2.956-.34 4.232-.947"/></svg>
+                        </button>
+                    </div>
+                    <p x-show="passwordConfirmation && password !== passwordConfirmation" x-cloak class="mt-2 text-sm text-red-600">Las contraseñas no coinciden.</p>
                     <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
                 </div>
 
-                <div class="flex items-center justify-between mt-5">
-                    <button type="button" @click="step = 1; error = ''" class="text-sm text-gray-500 underline hover:text-gray-700">
-                        Cambiar número
-                    </button>
-                    <div class="flex items-center gap-3">
-                        <a class="text-sm text-gray-600 underline hover:text-gray-900" href="{{ route('login') }}">Ya tengo cuenta</a>
-                        <x-primary-button>Registrarme</x-primary-button>
-                    </div>
+                <div class="flex justify-end mt-5">
+                    <x-primary-button>Registrarme</x-primary-button>
                 </div>
             </div>
 
