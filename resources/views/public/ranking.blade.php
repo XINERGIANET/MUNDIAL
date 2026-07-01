@@ -51,10 +51,10 @@
                                         </span>
                                     </td>
                                     <td class="px-5 py-4">
-                                        <p class="font-black text-gray-950">{{ $ranking->participant?->displayName() ?? $ranking->user->name }}</p>
+                                        <p class="font-black text-gray-950">{{ $ranking->participant?->displayName() ?? $ranking->user?->name }}</p>
                                     </td>
                                     <td class="hidden px-5 py-4 text-gray-500 sm:table-cell">
-                                        {{ $ranking->user->name }}
+                                        {{ $ranking->user?->name }}
                                     </td>
                                     <td class="px-5 py-4 text-right">
                                         <span class="text-lg font-black text-gray-950">{{ $ranking->total_points }}</span>
