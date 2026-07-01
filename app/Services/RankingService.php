@@ -70,7 +70,7 @@ class RankingService
     public function getRanking(Tournament $tournament)
     {
         return $tournament->rankings()
-            ->with(['user', 'participant'])
+            ->with(['user', 'participant.user'])
             ->orderBy('position')
             ->get();
     }
