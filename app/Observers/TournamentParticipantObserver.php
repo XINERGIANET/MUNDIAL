@@ -3,23 +3,17 @@
 namespace App\Observers;
 
 use App\Models\TournamentParticipant;
+use App\Services\RankingService;
 
 class TournamentParticipantObserver
 {
-    /**
-     * Handle the TournamentParticipant "created" event.
-     */
-    public function created(TournamentParticipant $tournamentParticipant): void
+    public function saved(TournamentParticipant $participant): void
     {
-        //
-    }
-
-    /**
-     * Handle the TournamentParticipant "updated" event.
-     */
-    public function updated(TournamentParticipant $tournamentParticipant): void
-    {
-        //
+        if ($participant->status === 'approved') {
+            app(RankingService::class)->recalculateTournamentRanking(
+                $participant->tournament
+            );
+        }
     }
 
     // Al hacer soft-delete limpia rankings y predicciones del participante
