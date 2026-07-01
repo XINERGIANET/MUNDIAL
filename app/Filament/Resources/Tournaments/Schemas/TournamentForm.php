@@ -32,7 +32,7 @@ class TournamentForm
                 TextInput::make('currency')->default('PEN')->required()->maxLength(8),
                 TextInput::make('payment_whatsapp_number')->maxLength(30),
                 TextInput::make('payment_yape_number')->label('Número Yape')->maxLength(30),
-                FileUpload::make('payment_qr_path')->label('QR de Yape')->image()->directory('payment-qr')->disk('public')->deletable()->moveFiles(),
+                FileUpload::make('payment_qr_path')->label('QR de Yape')->image()->directory('payment-qr')->disk('public')->visibility('public')->deletable()->moveFiles(),
                 TextInput::make('exact_score_points')->numeric()->default(5)->required(),
                 TextInput::make('correct_result_points')->numeric()->default(3)->required(),
                 TextInput::make('wrong_prediction_points')->numeric()->default(0)->required(),
