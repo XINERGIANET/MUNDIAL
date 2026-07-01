@@ -6,6 +6,9 @@
                     <span class="grid h-11 w-11 place-items-center rounded-lg bg-white text-sm font-black text-blue-800">26</span>
                     <span class="font-black uppercase tracking-wide">Polla Mundialista</span>
                 </a>
+                <a href="{{ route('login') }}" class="rounded-md border border-white/30 px-5 py-2 text-sm font-black text-white hover:bg-white/10">
+                    Iniciar sesión
+                </a>
             </div>
         </header>
 
@@ -15,15 +18,73 @@
                 <div class="max-w-3xl mx-auto px-4 py-12 text-center">
                     <p class="text-xs font-black uppercase tracking-[.2em] text-white/70">Canada · Mexico · USA 2026</p>
                     <h1 class="mt-4 text-4xl font-black tracking-tight sm:text-5xl">Polla Mundialista 2026</h1>
-                    <p class="mt-4 text-base text-white/80">Pronostica los partidos de la eliminatoria y compite en el ranking con tus amigos.</p>
-                    <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-                        <a href="{{ route('register') }}" class="rounded-md bg-white px-8 py-3 text-center text-sm font-black text-blue-800 hover:bg-blue-50">
+                    <p class="mt-4 text-base leading-relaxed text-white/80">
+                        Desde octavos de final, vive el mundial con mayor emoción.<br>
+                        Reta a tus amigos y conviértete en el campeón de la Polla Mundialista de Xinergia.
+                    </p>
+
+                    {{-- Inscripciones + pozo --}}
+                    <div class="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+                        <div class="rounded-full bg-white/10 px-5 py-2 text-sm font-bold text-white/90 ring-1 ring-white/20">
+                            📅 Inscripciones abiertas hasta el <span class="font-black text-white">4 de julio · 11:00 am</span>
+                        </div>
+                    </div>
+
+                    {{-- Pozo --}}
+                    <div class="mt-4 inline-flex items-center gap-3 rounded-2xl bg-white/10 px-6 py-4 ring-1 ring-white/20">
+                        <div class="text-left">
+                            <p class="text-xs font-black uppercase tracking-widest text-white/60">Pozo de premios en aumento</p>
+                            <p class="mt-0.5 text-sm text-white/80">Cada nuevo participante incrementa el premio</p>
+                        </div>
+                        <div class="shrink-0 rounded-xl bg-white px-4 py-2 text-center">
+                            <p class="text-2xl font-black text-blue-800">{{ $participantCount }}</p>
+                            <p class="text-[10px] font-black uppercase tracking-wide text-blue-600">participantes</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-center">
+                        <a href="{{ route('register') }}" class="rounded-xl bg-white px-12 py-4 text-center text-base font-black text-blue-800 shadow-lg hover:bg-blue-50">
                             Inscríbete ahora
                         </a>
-                        <a href="{{ route('login') }}" class="rounded-md border border-white/30 px-8 py-3 text-center text-sm font-black text-white hover:bg-white/10">
-                            Ya tengo cuenta
-                        </a>
                     </div>
+                </div>
+            </section>
+
+            {{-- Cómo participar --}}
+            <section class="max-w-5xl mx-auto px-4 pt-10">
+                <div class="grid gap-4 sm:grid-cols-2">
+
+                    {{-- Tarjeta izquierda: jugadas --}}
+                    <div class="rounded-2xl border border-gray-200 bg-white p-6">
+                        <h2 class="text-xl font-black text-gray-950">¿Cómo participas?</h2>
+                        <p class="mt-2 text-sm leading-relaxed text-gray-600">
+                            Con el pago de <span class="font-black text-gray-950">S/ 15</span>, obtienes <span class="font-black text-gray-950">1 jugada</span>, que te permite registrar tus pronósticos para todos los partidos de la fase eliminatoria:
+                        </p>
+                        <ul class="mt-4 space-y-2 text-sm text-gray-700">
+                            <li class="flex items-center gap-2">⚽ <span><span class="font-black">Octavos de final</span> — 8 partidos</span></li>
+                            <li class="flex items-center gap-2">⚽ <span><span class="font-black">Cuartos de final</span> — 4 partidos</span></li>
+                            <li class="flex items-center gap-2">⚽ <span><span class="font-black">Semifinales</span> — 2 partidos</span></li>
+                            <li class="flex items-center gap-2">⚽ <span><span class="font-black">Final</span> — 1 partido</span></li>
+                            <li class="flex items-center gap-2">⚽ <span><span class="font-black">Partido por el tercer puesto</span> — 1 partido</span></li>
+                        </ul>
+                        <p class="mt-4 text-sm font-black text-gray-950">Total: 16 pronósticos.</p>
+                    </div>
+
+                    {{-- Tarjeta derecha: reglas --}}
+                    <div class="rounded-2xl border border-gray-200 bg-white p-6">
+                        <h2 class="text-xl font-black text-gray-950">Reglas de juego</h2>
+                        <div class="mt-4 space-y-4 text-sm leading-relaxed text-gray-600">
+                            <div class="flex gap-3">
+                                <span class="mt-0.5 shrink-0 text-base">⏱️</span>
+                                <p>Podrás colocar tu resultado <span class="font-bold text-gray-800">hasta 10 minutos antes del inicio de cada partido</span>. Al cerrarse el tiempo, podrás visualizar los resultados de cada usuario para garantizar la confiabilidad de la competencia.</p>
+                            </div>
+                            <div class="flex gap-3">
+                                <span class="mt-0.5 shrink-0 text-base">🔄</span>
+                                <p>En caso de empate a los 90 minutos, se tomará el resultado final obtenido en los 120 minutos, es decir, incluido el tiempo extra.</p>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </section>
 

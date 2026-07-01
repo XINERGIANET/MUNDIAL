@@ -45,7 +45,7 @@
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                                     </svg>
-                                    {{ $hasJugada ? 'Agregar otra jugada' : 'Inscribirme' }}
+                                    {{ $hasJugada ? 'Agregar otra jugada' : 'Realizar el pago' }}
                                 </button>
 
                                 {{-- Payment modal (teleportado al body para evitar stacking context del padre) --}}

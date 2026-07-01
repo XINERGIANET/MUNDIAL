@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-app-layout>
     @php
         $resultColors = [
             'exact_score'    => 'bg-green-50 text-green-800 ring-1 ring-green-200',
@@ -14,26 +14,6 @@
     @endphp
 
     <div class="min-h-screen bg-[#f6f8fb]">
-
-        {{-- Header --}}
-        <header class="border-b border-white/20 wc-shell text-white">
-            <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-5">
-                <a href="{{ route('home') }}" class="flex items-center gap-3">
-                    <span class="grid h-11 w-11 place-items-center rounded-lg bg-white text-sm font-black text-blue-800">26</span>
-                    <span class="font-black uppercase tracking-wide">Polla Mundialista</span>
-                </a>
-                <nav class="flex items-center gap-6 text-sm font-semibold">
-                    <a href="{{ route('home') }}" class="text-white/80 hover:text-white">Inicio</a>
-                    <a href="{{ route('results') }}" class="border-b-2 border-white pb-0.5 text-white">Resultados</a>
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="rounded-md bg-white/20 px-4 py-2 text-white hover:bg-white/30">Mi dashboard</a>
-                    @else
-                        <a href="{{ route('login') }}" class="rounded-md bg-white px-4 py-2 text-blue-800 hover:bg-blue-50">Iniciar sesión</a>
-                    @endauth
-                </nav>
-            </div>
-        </header>
-
         <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
             {{-- Page title --}}
@@ -119,7 +99,7 @@
             @if ($matches->isNotEmpty() && $rankings->isNotEmpty())
                 <section>
                     <h2 class="mb-3 text-xs font-black uppercase tracking-widest text-gray-400">Pronósticos por partido</h2>
-                    <p class="mb-4 text-xs text-gray-400">Los pronósticos se revelan una vez cerrada la ventana de predicción de cada partido.</p>
+                    <p class="mb-4 text-xs text-gray-400">Los pronósticos de cada partido se revelan 10 minutos antes de su inicio, cuando la ventana de predicción cierra. Si un usuario ya tiene registrados varios partidos, sus resultados se irán mostrando de forma progresiva, uno a uno, conforme vaya cerrando la ventana de cada encuentro.</p>
 
                     <div class="wc-card overflow-x-auto rounded-2xl">
                         <table class="min-w-full text-xs">
@@ -207,4 +187,4 @@
         </footer>
 
     </div>
-</x-guest-layout>
+</x-app-layout>
