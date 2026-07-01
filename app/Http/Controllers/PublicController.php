@@ -60,6 +60,7 @@ class PublicController extends Controller
             ->where('tournament_id', $tournament->id)
             ->whereHas('homeTeam')
             ->whereHas('awayTeam')
+            ->whereHas('phase', fn ($q) => $q->where('name', '!=', 'Dieciseisavos de Final'))
             ->orderBy('starts_at')
             ->get();
 
