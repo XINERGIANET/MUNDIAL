@@ -26,9 +26,29 @@ class MatchResultService
         ]);
 
         $this->auditService->record('match_result_saved', $match, $old, $match->only(['home_score', 'away_score', 'status']));
+        $this->advanceBracket($match->fresh());
         $this->rankingService->recalculateMatchPredictions($match->fresh(['tournament']));
         $this->rankingService->recalculateTournamentRanking($match->tournament);
 
         return $match->fresh();
+    }
+
+    // Si hay ganador claro, lo coloca en el partido siguiente.
+    // En caso de empate (penales), el admin asigna el equipo manualmente.
+    private function advanceBracket(FootballMatch $match): void
+    {
+        if ($match->home_score === $match->away_score) {
+            return;
+        }
+
+        $winnerId = $match->home_score > $match->away_score
+            ? $match->home_team_id
+            : $match->away_team_id;
+
+        FootballMatch::where('home_source_match_id', $match->id)
+            ->update(['home_team_id' => $winnerId]);
+
+        FootballMatch::where('away_source_match_id', $match->id)
+            ->update(['away_team_id' => $winnerId]);
     }
 }
