@@ -40,3 +40,32 @@ body {
     height: 4px;
     background: linear-gradient(90deg, var(--wc-blue), var(--wc-red), var(--wc-gold), var(--wc-green));
 }
+
+/* Modal de pago: se adapta al viewport visible y respeta las áreas seguras de iOS. */
+.payment-modal {
+    height: 100vh;
+    height: 100dvh;
+    padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+        max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+}
+
+.payment-modal__dialog {
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - max(2rem, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+}
+
+.payment-modal__footer {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+@media (max-height: 700px) {
+    .payment-modal {
+        padding-top: max(.5rem, env(safe-area-inset-top));
+        padding-bottom: max(.5rem, env(safe-area-inset-bottom));
+    }
+
+    .payment-modal__dialog {
+        max-height: calc(100vh - 1rem);
+        max-height: calc(100dvh - max(1rem, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+    }
+}

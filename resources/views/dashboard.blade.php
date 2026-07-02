@@ -36,7 +36,9 @@
                     <div class="flex flex-1 flex-wrap items-end gap-3">
                         @foreach ($availableTournaments as $availTournament)
                             @php $hasJugada = $participants->firstWhere('tournament_id', $availTournament->id); @endphp
-                            <div x-data="{ open: false }" class="flex-1">
+                            <div x-data="{ open: false }"
+                                 x-init="$watch('open', value => document.body.style.overflow = value ? 'hidden' : '')"
+                                 class="flex-1">
                                 <p class="mb-1.5 text-xs font-black uppercase tracking-wide text-white/60">
                                     {{ $availTournament->name }}
                                 </p>
@@ -51,7 +53,8 @@
                                 {{-- Payment modal (teleportado al body para evitar stacking context del padre) --}}
                                 <template x-teleport="body">
                                 <div x-show="open" style="display:none"
-                                     class="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                                     @keydown.escape.window="open = false"
+                                     class="payment-modal fixed inset-0 z-[200] flex items-center justify-center">
                                     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="open = false"></div>
                                     <div x-show="open"
                                          x-transition:enter="transition ease-out duration-200"
@@ -60,8 +63,8 @@
                                          x-transition:leave="transition ease-in duration-150"
                                          x-transition:leave-start="opacity-100 scale-100"
                                          x-transition:leave-end="opacity-0 scale-95"
-                                         class="relative z-10 w-full max-w-sm rounded-2xl bg-white shadow-2xl">
-                                        <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+                                         class="payment-modal__dialog relative z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+                                        <div class="shrink-0 flex items-center justify-between border-b border-gray-100 px-6 py-4">
                                             <div>
                                                 <p class="text-[10px] font-black uppercase tracking-widest text-blue-600">Inscripción</p>
                                                 <h3 class="text-base font-black text-gray-950">{{ $availTournament->name }}</h3>
@@ -74,9 +77,10 @@
                                             </button>
                                         </div>
                                         <form method="POST" action="{{ route('tournaments.register', $availTournament) }}"
-                                              enctype="multipart/form-data">
+                                              enctype="multipart/form-data"
+                                              class="flex min-h-0 flex-1 flex-col">
                                             @csrf
-                                            <div class="space-y-4 px-6 py-5">
+                                            <div class="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 py-5">
                                                 <div class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-6">
                                                     @if ($availTournament->payment_qr_path)
                                                         <img src="{{ Storage::url($availTournament->payment_qr_path) }}"
@@ -121,7 +125,7 @@
                                                     <p class="mt-1 text-[10px] text-gray-400">Foto o captura de pantalla del pago por Yape.</p>
                                                 </div>
                                             </div>
-                                            <div class="rounded-b-2xl border-t border-gray-100 bg-gray-50 px-6 py-4">
+                                            <div class="payment-modal__footer shrink-0 border-t border-gray-100 bg-gray-50 px-6 pt-4">
                                                 <button type="submit"
                                                         class="w-full rounded-xl bg-blue-700 px-6 py-3 text-sm font-black text-white hover:bg-blue-800 active:bg-blue-900">
                                                     Confirmar inscripción

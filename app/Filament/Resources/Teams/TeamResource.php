@@ -31,7 +31,7 @@ class TeamResource extends Resource
     protected static \UnitEnum|string|null $navigationGroup = 'Torneos';
 
     public static function form(Schema $schema): Schema
-    {
+    {   
         return TeamForm::configure($schema);
     }
 
