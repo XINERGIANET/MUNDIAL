@@ -40,6 +40,10 @@
                             <p class="text-2xl font-black text-blue-800">{{ $participantCount }}</p>
                             <p class="text-[10px] font-black uppercase tracking-wide text-blue-600">participantes</p>
                         </div>
+                        <div class="shrink-0 rounded-xl bg-yellow-400 px-4 py-2 text-center">
+                            <p class="text-2xl font-black text-yellow-900">S/ 300</p>
+                            <p class="text-[10px] font-black uppercase tracking-wide text-yellow-800">pozo actual</p>
+                        </div>
                     </div>
 
                     <div class="mt-8 flex justify-center">
