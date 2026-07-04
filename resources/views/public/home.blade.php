@@ -26,7 +26,7 @@
                     {{-- Inscripciones + pozo --}}
                     <div class="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
                         <div class="rounded-full bg-white/10 px-5 py-2 text-sm font-bold text-white/90 ring-1 ring-white/20">
-                            📅 Inscripciones abiertas hasta el <span class="font-black text-white">4 de julio · 11:00 am</span>
+                            Las inscripciones seguirán abiertas, ¡inscríbete, realiza el pago y participa por el campeonato!
                         </div>
                     </div>
 
