@@ -155,7 +155,7 @@
                                                         {{ $prediction->predicted_home_score }}-{{ $prediction->predicted_away_score }}
                                                     </span>
                                                 @else
-                                                    <span class="text-gray-300">—</span>
+                                                    <span class="inline-block rounded-lg bg-gray-100 px-2 py-1 font-black text-gray-400">N/R</span>
                                                 @endif
                                             </td>
                                         @endforeach
@@ -175,7 +175,7 @@
                         <span class="inline-flex items-center gap-1.5"><span class="rounded-lg bg-red-50 px-2 py-0.5 font-black text-red-700 ring-1 ring-red-200">0-1</span> Fallo</span>
                         <span class="inline-flex items-center gap-1.5"><span class="rounded-lg bg-gray-50 px-2 py-0.5 font-black text-gray-500 ring-1 ring-gray-200">0-0</span> Pendiente</span>
                         <span class="inline-flex items-center gap-1.5"><span class="font-black text-gray-300">·</span> Partido aún abierto</span>
-                        <span class="inline-flex items-center gap-1.5"><span class="font-black text-gray-300">—</span> Sin pronóstico</span>
+                        <span class="inline-flex items-center gap-1.5"><span class="rounded-lg bg-gray-100 px-2 py-0.5 font-black text-gray-400">N/R</span> No registrado</span>
                     </div>
                 </section>
             @endif
