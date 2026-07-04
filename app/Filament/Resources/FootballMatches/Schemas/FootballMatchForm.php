@@ -49,6 +49,14 @@ class FootballMatchForm
                     ->default(false),
                 TextInput::make('home_score')->label('Goles local')->numeric()->minValue(0)->maxValue(30),
                 TextInput::make('away_score')->label('Goles visitante')->numeric()->minValue(0)->maxValue(30),
+                Select::make('penalty_winner_team_id')
+                    ->label('Ganador en penales')
+                    ->helperText('Solo si el marcador es empate y el partido se definió por penales.')
+                    ->options(fn ($record) => $record ? [
+                        $record->home_team_id => $record->homeTeam?->name ?? 'Local',
+                        $record->away_team_id => $record->awayTeam?->name ?? 'Visitante',
+                    ] : [])
+                    ->nullable(),
             ]);
     }
 }

@@ -127,6 +127,11 @@
                                                 <div class="mt-0.5 font-black text-gray-800">
                                                     {{ $match->home_score }}–{{ $match->away_score }}
                                                 </div>
+                                                @if ($match->penalty_winner_team_id)
+                                                    <div class="text-[8px] font-black uppercase text-amber-600">
+                                                        P: {{ $match->home_team_id === $match->penalty_winner_team_id ? strtoupper(substr($match->homeTeam?->name ?? '?', 0, 3)) : strtoupper(substr($match->awayTeam?->name ?? '?', 0, 3)) }}
+                                                    </div>
+                                                @endif
                                             @endif
                                         </th>
                                     @endforeach

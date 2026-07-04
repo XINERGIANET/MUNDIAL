@@ -9,7 +9,10 @@ use Filament\Actions\EditAction;
 use Filament\Actions\Action;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\TrashedFilter;
@@ -48,7 +51,19 @@ class FootballMatchesTable
                         'cancelled' => 'danger',
                         default => 'info',
                     }),
-                TextColumn::make('score')->label('Marcador')->state(fn ($record) => $record->home_score === null ? '-' : $record->home_score.' - '.$record->away_score),
+                TextColumn::make('score')->label('Marcador')->state(function ($record) {
+                    if ($record->home_score === null) {
+                        return '-';
+                    }
+                    $score = $record->home_score.' - '.$record->away_score;
+                    if ($record->penalty_winner_team_id) {
+                        $winner = $record->home_team_id === $record->penalty_winner_team_id
+                            ? $record->homeTeam?->name
+                            : $record->awayTeam?->name;
+                        $score .= ' (P: '.$winner.')';
+                    }
+                    return $score;
+                }),
             ])
             ->filters([
                 TrashedFilter::make(),
@@ -61,20 +76,37 @@ class FootballMatchesTable
                     ->modalSubmitActionLabel('Guardar resultado')
                     ->modalContent(fn ($record) => view('filament.actions.match-result-modal', ['record' => $record]))
                     ->schema([
-                        TextInput::make('home_score')
-                            ->label('Goles local')
-                            ->numeric()
+                        Grid::make(2)->schema([
+                            TextInput::make('home_score')
+                                ->label('Goles local')
+                                ->numeric()
+                                ->required()
+                                ->live()
+                                ->minValue(0)
+                                ->maxValue(30)
+                                ->placeholder('0')
+                                ->extraInputAttributes(['class' => 'text-center text-3xl font-black h-16']),
+                            TextInput::make('away_score')
+                                ->label('Goles visitante')
+                                ->numeric()
+                                ->required()
+                                ->live()
+                                ->minValue(0)
+                                ->maxValue(30)
+                                ->placeholder('0')
+                                ->extraInputAttributes(['class' => 'text-center text-3xl font-black h-16']),
+                        ]),
+                        Select::make('penalty_winner_team_id')
+                            ->label('Ganador en penales')
+                            ->helperText('El marcador quedó en empate — selecciona el equipo que ganó en la tanda de penales.')
+                            ->options(fn ($record) => [
+                                $record->home_team_id => $record->homeTeam?->name ?? 'Local',
+                                $record->away_team_id => $record->awayTeam?->name ?? 'Visitante',
+                            ])
                             ->required()
-                            ->minValue(0)
-                            ->maxValue(30)
-                            ->extraInputAttributes(['class' => 'text-center text-2xl font-black']),
-                        TextInput::make('away_score')
-                            ->label('Goles visitante')
-                            ->numeric()
-                            ->required()
-                            ->minValue(0)
-                            ->maxValue(30)
-                            ->extraInputAttributes(['class' => 'text-center text-2xl font-black']),
+                            ->hidden(fn (Get $get) => (string) $get('home_score') !== (string) $get('away_score')
+                                || $get('home_score') === null
+                                || $get('home_score') === ''),
                     ])
                     ->action(function ($record, array $data): void {
                         $admin = Auth::user();
@@ -83,7 +115,17 @@ class FootballMatchesTable
                             return;
                         }
 
-                        app(MatchResultService::class)->register($record, (int) $data['home_score'], (int) $data['away_score'], $admin);
+                        $penaltyWinnerId = isset($data['penalty_winner_team_id'])
+                            ? (int) $data['penalty_winner_team_id']
+                            : null;
+
+                        app(MatchResultService::class)->register(
+                            $record,
+                            (int) $data['home_score'],
+                            (int) $data['away_score'],
+                            $admin,
+                            $penaltyWinnerId,
+                        );
                     }),
                 EditAction::make(),
             ])

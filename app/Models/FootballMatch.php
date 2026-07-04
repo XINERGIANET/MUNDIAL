@@ -29,6 +29,7 @@ class FootballMatch extends Model
         'is_welcome_courtesy',
         'home_score',
         'away_score',
+        'penalty_winner_team_id',
         'result_registered_by',
         'result_registered_at',
     ];
@@ -76,6 +77,11 @@ class FootballMatch extends Model
     public function awayTeam(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'away_team_id');
+    }
+
+    public function penaltyWinner(): BelongsTo
+    {
+        return $this->belongsTo(Team::class, 'penalty_winner_team_id');
     }
 
     public function predictions(): HasMany
