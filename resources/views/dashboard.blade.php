@@ -276,11 +276,11 @@
                             <div class="h-px flex-1 bg-gray-200"></div>
                         </div>
 
-                        @foreach ($phaseMatches->groupBy(fn ($m) => $m->starts_at->format('Y-m-d')) as $date => $dateMatches)
+                        @foreach ($phaseMatches->groupBy(fn ($m) => $m->starts_at->setTimezone('America/Lima')->format('Y-m-d')) as $date => $dateMatches)
 
                             {{-- Day separator --}}
                             <p class="mt-4 text-xs font-black uppercase tracking-widest text-gray-400">
-                                {{ $dateMatches->first()->starts_at->locale('es')->isoFormat('dddd D [de] MMMM') }}
+                                {{ $dateMatches->first()->starts_at->setTimezone('America/Lima')->locale('es')->isoFormat('dddd D [de] MMMM') }}
                             </p>
 
                             <div class="wc-card overflow-hidden rounded-2xl divide-y divide-gray-100">
@@ -310,9 +310,9 @@
                                         {{-- Top bar: time + badges --}}
                                         <div class="mb-5 flex flex-wrap items-center justify-between gap-2">
                                             <div class="flex items-center gap-2 text-sm">
-                                                <span class="font-black text-gray-700">{{ $match->starts_at->format('H:i') }}</span>
+                                                <span class="font-black text-gray-700">{{ $match->starts_at->setTimezone('America/Lima')->format('H:i') }}</span>
                                                 <span class="text-gray-300">·</span>
-                                                <span class="text-xs text-gray-400">cierra {{ $match->prediction_closes_at->format('H:i') }}</span>
+                                                <span class="text-xs text-gray-400">cierra {{ $match->prediction_closes_at->setTimezone('America/Lima')->format('H:i') }}</span>
                                             </div>
                                             <div class="flex items-center gap-2">
                                                 @if ($isLive)

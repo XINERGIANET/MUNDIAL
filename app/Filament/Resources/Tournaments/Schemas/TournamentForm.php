@@ -19,8 +19,8 @@ class TournamentForm
                 TextInput::make('name')->required()->maxLength(255),
                 TextInput::make('slug')->required()->unique(ignoreRecord: true)->maxLength(255),
                 FileUpload::make('banner_path')->image()->directory('tournaments')->disk('public'),
-                DateTimePicker::make('starts_at')->required(),
-                DateTimePicker::make('ends_at')->required(),
+                DateTimePicker::make('starts_at')->required()->timezone('America/Lima'),
+                DateTimePicker::make('ends_at')->required()->timezone('America/Lima'),
                 Select::make('status')->options([
                     'draft' => 'Borrador',
                     'open' => 'Abierto',

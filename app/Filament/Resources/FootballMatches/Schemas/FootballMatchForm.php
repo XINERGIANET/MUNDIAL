@@ -35,8 +35,8 @@ class FootballMatchForm
                     ->preload(),
                 Select::make('home_team_id')->label('Equipo local')->relationship('homeTeam', 'name')->required()->searchable(),
                 Select::make('away_team_id')->label('Equipo visitante')->relationship('awayTeam', 'name')->required()->searchable()->different('home_team_id'),
-                DateTimePicker::make('starts_at')->label('Inicio')->required(),
-                DateTimePicker::make('prediction_closes_at')->label('Cierre de pronosticos')->required(),
+                DateTimePicker::make('starts_at')->label('Inicio')->required()->timezone('America/Lima'),
+                DateTimePicker::make('prediction_closes_at')->label('Cierre de pronosticos')->required()->timezone('America/Lima'),
                 Select::make('status')->label('Estado')->options([
                     'scheduled' => 'Programado',
                     'live' => 'En vivo',
